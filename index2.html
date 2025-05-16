@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selamat Ulang Tahun 🎉</title>
+  <style>
+    @import url('https://fonts.google chrome.com/css2?family=Pacifico&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Pacifico', cursive;
+      background: linear-gradient(-45deg, #ffdde1, #ee9ca7, #fad0c4, #fbc2eb);
+      background-size: 400% 400%;
+      animation: gradient 12s ease infinite;
+      color: #4e0033;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    @keyframes gradient {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.5em;
+    }
+
+    p {
+      font-size: 1.2em;
+      margin: 0.3em 0;
+    }
+
+    .lyrics {
+      margin-top: 1em;
+      font-family: monospace;
+      white-space: pre-wrap;
+      font-size: 1em;
+      color: #333;
+      max-width: 90%;
+    }
+
+    button {
+      margin-top: 1.5em;
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #d6336c;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #ad1457;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🎉 Selamat Ulang Tahun! 🎉</h2>
+  <p>Panjang umur, semoga kamu baik-baik saja ya?</p>
+  <p>Kalau butuh apa-apa, cerita sama aku.</p>
+  <p>Aku di sini, aku tidak kemana mana</p>
+  <p>jangan sungkan ya.</p>
+  <p>Jaga diri baik baik yaa cantik.</p>
+  <p>sorry for my shortcomings</p>
+  <p>sorry and thank you</p>
+  <p>I love you beautiful</p>
+  <p style="font-size: 2em; color: #ff4081;">❤️ Love u ❤️</p>
+
+  <div class="lyrics">
+🎵 Cerita kita tak jauh berbeda  
+Got beat down by the world  
+Sometimes I wanna fold  
+Namun, suratmu 'kan kuceritakan  
+Ke anak-anakku nanti  
+Bahwa aku pernah dicintai  
+  
+With everything you are  
+Fully as I am  
+With everything you are 🎵
+  </div>
+
+  <button onclick="toggleMusic()">🔊 Play/Pause Musik</button>
+
+  <audio id="bgMusic" loop>
+    <source src="Hindia - everything u are [lB8ASupNtlw] (mp3cut.net).mp3" type="audio/mpeg">
+    Browser kamu tidak mendukung audio.
+  </audio>
+
+  <script>
+  document.addEventListener("click", () => {
+    const music = document.getElementById("bgMusic");
+    if (music.paused) music.play();
+  }, { once: true });
+</script>
+
+</body>
+</html>
