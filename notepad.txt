@@ -1,0 +1,41 @@
+step awal: -login pengguna (username)
+	-nim sbg kata sandi(password)
+step dua:-informasi pribadi,dari nim,nama,program studi,dan fakultas
+step tiga:-mengmabil krs untuk mendaftar mata kuliah yg akan diambil pada semester tersebut
+step empat:-mahasiswa dapat menghapus mata kuliah yg tidak ingin diambil pada krs
+step lima:-melihat jadwal kuliah berdasarkan semester
+step enam:-dapat melihat nilai rata rata mata kuliah yg diambil
+step tujuh:-dapat mengambil beasiswa untuk dapat pengurangan spp
+step delapan:-dapat memilih metode pembayaran ketika ingin melakukan pembayaran spp
+step sembilan:-dapat mengunduh total pembayaran spp sesuai dgn krs yg diambil dlm bentnuk pembayaran(txt)
+
+SOAL :
+Sebuah universitas ingin membuat portal mahasiswa yang memungkinkan mahasiswa
+untuk mengakses informasi akademik, seperti jadwal kuliah, nilai, dan pemberitahuan
+penting lainnya. (PORTAL UAD)
+KETENTUAN PROGRAM :
+1. Mahasiswa dapat melakukan login menggunakan Nama Pengguna (Username)
+dan Nomor Induk Mahasiswa (NIM) sebagai kata sandi (Password).
+2. Setiap mahasiswa memiliki informasi pribadi yang terdiri dari NIM, nama, program
+studi, dan fakultas.
+3. Mahasiswa dapat mengambil Kartu Rencana Studi (KRS) untuk mendaftar mata
+kuliah yang akan diambil pada semester tersebut
+4. Mahasiswa dapat menghapus matakuliah yang tidak ingin diambil pada KRS
+5. Mahasiswa dapat melihat jadwal kuliah mereka berdasarkan semester.
+6. Mahasiswa dapat melihat nilai-nilai mata kuliah yang telah mereka ambil.
+7. mahasiswa dapat mengambil beasiswa untuk mendapat pengurangan biaya SPP
+8. Mahasiswa dapat memilih metode pembayaran ketika ingin melakukan
+pembayaran SPP
+9. Mahasiswa dapat mengunduh total pembayaran spp sesuai dengan KRS yang
+diambilnya dalam bentuk pembayaran (.txt)
+
+PETUNJUK PENGERJAAN :
+• dimulai dengan membuat ide solusi yang muncul ketika soal dibaca (ide solusi
+bisa didapatkan berupa gambar ,rumus ataupun oret-oretan).
+• buatlah flowchart nya (bukan raptor)
+• penulisan dalam format algoritma (pseudocode) berdasarkan ide solusi
+• dibuat menggunakan Github dikerjakan secara individu
+• folder yang berisi fitur tersebut akan disatukan dan dipanggil ke dalam sebuah
+main.cpp
+• menerapkan materi pertemuan 1-6
+• Format penamaan Github(Repository) : [3 digit NIM][RESPONSI UTS ALPRO][SLOT]
