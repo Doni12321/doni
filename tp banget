@@ -1,0 +1,5627 @@
+#include <iostream>
+#include <string>
+#include <cstring>
+using namespace std;
+
+// ==============================================
+// STRUCT DASAR
+// ==============================================
+struct Hewan {
+    string nama;
+    string jenis;
+    int umur;
+    string riwayatPenyakit;
+};
+
+struct Pemilik {
+    string username;
+    string password;
+    string email;
+    string noTelepon;
+    Hewan hewan;
+    string riwayatKunjungan[10];
+    int jumlahRiwayat;
+    bool aktif;
+    Pemilik* next;
+    Pemilik* prev;
+    
+};
+
+struct Dokter {
+    string username;
+    string password;
+    string nama;
+    string spesialisasi;
+    bool aktif;
+    Dokter* next;
+    Dokter* prev;
+};
+
+struct JanjiTemu {
+    string namaPemilik;
+    string namaHewan;
+    string tanggal;
+    string jam;
+    string keluhan;
+    string status;
+    JanjiTemu* next;
+    JanjiTemu* prev;
+};
+
+// ==============================================
+// CLASS DOUBLY LINKED LIST TEMPLATE
+// ==============================================
+template <typename T>
+class DoublyLinkedList {
+private:
+    T* head;
+    T* tail;
+    int size;
+
+public:
+    DoublyLinkedList() : head(NULL), tail(NULL), size(0) {}
+
+    ~DoublyLinkedList() {
+        clear();
+    }
+
+    void addToEnd(T* newNode) {
+        if (!head) {
+            head = tail = newNode;
+            newNode->next = newNode->prev = NULL;
+        } else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            newNode->next = NULL;
+            tail = newNode;
+        }
+        size++;
+    }
+
+    void addToFront(T* newNode) {
+        if (!head) {
+            head = tail = newNode;
+            newNode->next = newNode->prev = NULL;
+        } else {
+            newNode->next = head;
+            head->prev = newNode;
+            newNode->prev = NULL;
+            head = newNode;
+        }
+        size++;
+    }
+
+    T* findPemilikByUsername(string username) {
+        T* current = head;
+        while (current) {
+            if (current->username == username) {
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+
+    T* findDokterByUsername(string username) {
+        T* current = head;
+        while (current) {
+            if (current->username == username) {
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+
+    JanjiTemu* findJanjiByPemilik(string username) {
+        T* current = head;
+        while (current) {
+            if (current->namaPemilik == username) {
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+
+    void removeByUsername(string username) {
+        T* current = head;
+        while (current) {
+            if (current->username == username) {
+                if (current->prev) {
+                    current->prev->next = current->next;
+                } else {
+                    head = current->next;
+                }
+                if (current->next) {
+                    current->next->prev = current->prev;
+                } else {
+                    tail = current->prev;
+                }
+                delete current;
+                size--;
+                return;
+            }
+            current = current->next;
+        }
+    }
+
+    void removeJanjiByIndex(int index) {
+        if (index < 0 || index >= size) return;
+        
+        T* current = head;
+        for (int i = 0; i < index && current; i++) {
+            current = current->next;
+        }
+        
+        if (current) {
+            if (current->prev) {
+                current->prev->next = current->next;
+            } else {
+                head = current->next;
+            }
+            if (current->next) {
+                current->next->prev = current->prev;
+            } else {
+                tail = current->prev;
+            }
+            delete current;
+            size--;
+        }
+    }
+
+    void displayAllPemilik() {
+        T* current = head;
+        int counter = 1;
+        while (current) {
+            cout << counter << ". " << current->username;
+            cout << " - " << current->hewan.nama;
+            cout << " (" << current->hewan.jenis << ")";
+            cout << " - Status: " << (current->aktif ? "Aktif" : "Nonaktif") << "\n";
+            current = current->next;
+            counter++;
+        }
+    }
+
+    void displayAllDokter() {
+        T* current = head;
+        int counter = 1;
+        while (current) {
+            cout << counter << ". " << current->username;
+            cout << " - " << current->nama;
+            cout << " (" << current->spesialisasi << ")";
+            cout << " - Status: " << (current->aktif ? "Aktif" : "Nonaktif") << "\n";
+            current = current->next;
+            counter++;
+        }
+    }
+
+    void displayAllJanji() {
+        T* current = head;
+        int counter = 1;
+        while (current) {
+            cout << counter << ". " << current->namaHewan;
+            cout << " - Pemilik: " << current->namaPemilik;
+            cout << " - Tanggal: " << current->tanggal;
+            cout << " - Jam: " << current->jam;
+            cout << " - Status: " << current->status << "\n";
+            cout << "   Keluhan: " << current->keluhan << "\n\n";
+            current = current->next;
+            counter++;
+        }
+    }
+
+    void clear() {
+        T* current = head;
+        while (current) {
+            T* temp = current;
+            current = current->next;
+            delete temp;
+        }
+        head = tail = NULL;
+        size = 0;
+    }
+
+    T* getHead() { return head; }
+    T* getTail() { return tail; }
+    int getSize() { return size; }
+
+    T* getAt(int index) {
+        if (index < 0 || index >= size) return NULL;
+        
+        T* current = head;
+        for (int i = 0; i < index && current; i++) {
+            current = current->next;
+        }
+        return current;
+    }
+};
+
+// ==============================================
+// DEKLARASI OBJEK LINKED LIST
+// ==============================================
+DoublyLinkedList<Pemilik> listPemilik;
+DoublyLinkedList<Dokter> listDokter;
+DoublyLinkedList<JanjiTemu> listJanji;
+
+// ==============================================
+// PROTOTYPE FUNGSI
+// ==============================================
+void tampilkanMenuLogin();
+void registrasiPemilik();
+void loginPemilik();
+void loginDokter();
+void menuPemilik(string username);
+void menuDokter(string username);
+void buatJanjiTemu(string username);
+void lihatRiwayat(string username);
+void kelolaDataPasien();
+void kelolaJadwal();
+void gantiPasswordPemilik(string username);
+void lupaPassword();
+bool cekUsernameTerdaftar(string username);
+void tampilkanHeader();
+void kelolaPengguna();
+void kelolaPemilik();
+void kelolaDokter();
+void tambahDokter();
+void nonaktifkanPengguna();
+void resetPasswordPengguna();
+void lihatSemuaPengguna();
+
+// ==============================================
+// FUNGSI UTAMA
+// ==============================================
+int main() {
+    // Inisialisasi data dummy pemilik menggunakan linked list
+    Pemilik* pemilik1 = new Pemilik{
+        "user1", "pass1", "user1@email.com", "08123456789", 
+        {"Buddy", "Anjing", 3, "Tidak ada"}, {"Kontrol rutin", "Vaksinasi"}, 2, true,
+        NULL, NULL
+    };
+    listPemilik.addToEnd(pemilik1);
+
+    Pemilik* pemilik2 = new Pemilik{
+        "user2", "pass2", "user2@email.com", "08765432109", 
+        {"Milo", "Kucing", 2, "Flu kucing"}, {"Pemeriksaan umum"}, 1, true,
+        NULL, NULL
+    };
+    listPemilik.addToEnd(pemilik2);
+    
+    // Inisialisasi data dummy dokter
+    Dokter* dokter1 = new Dokter{
+        "dokter1", "doc1", "Dr. Ahmad Wijaya", "Hewan Peliharaan", true,
+        NULL, NULL
+    };
+    listDokter.addToEnd(dokter1);
+
+    Dokter* dokter2 = new Dokter{
+        "dokter2", "doc2", "Dr. Sari Dewi", "Hewan Eksotis", true,
+        NULL, NULL
+    };
+    listDokter.addToEnd(dokter2);
+
+    Dokter* admin = new Dokter{
+        "admin", "admin123", "Administrator", "Admin Sistem", true,
+        NULL, NULL
+    };
+    listDokter.addToEnd(admin);
+    
+    tampilkanHeader();
+    tampilkanMenuLogin();
+    
+    // Cleanup (sebenarnya dilakukan oleh destructor, tapi untuk amannya)
+    listPemilik.clear();
+    listDokter.clear();
+    listJanji.clear();
+    
+    return 0;
+}
+
+void tampilkanHeader() {
+    cout << "========================================\n";
+    cout << "     APLIKASI KLINIK HEWAN SEHAT\n";
+    cout << "     (Doubly Linked List Version)\n";
+    cout << "========================================\n";
+}
+
+void tampilkanMenuLogin() {
+    int pilihan;
+    
+    while(true) {
+        cout << "\n=== MENU UTAMA ===\n";
+        cout << "1. Registrasi Pemilik Baru\n";
+        cout << "2. Login sebagai Pemilik Hewan\n";
+        cout << "3. Login sebagai Dokter/Admin\n";
+        cout << "4. Lupa Password\n";
+        cout << "5. Keluar\n";
+        cout << "Pilih menu: ";
+        cin >> pilihan;
+        cin.ignore();
+        
+        switch(pilihan) {
+            case 1:
+                registrasiPemilik();
+                break;
+            case 2:
+                loginPemilik();
+                break;
+            case 3:
+                loginDokter();
+                break;
+            case 4:
+                lupaPassword();
+                break;
+            case 5:
+                cout << "Terima kasih telah menggunakan aplikasi!\n";
+                return;
+            default:
+                cout << "Pilihan tidak valid!\n";
+        }
+    }
+}
+
+void registrasiPemilik() {
+    if(listPemilik.getSize() >= 50) {
+        cout << "Maaf, kuota pendaftaran sudah penuh.\n";
+        return;
+    }
+    
+    cout << "\n=== REGISTRASI PEMILIK BARU ===\n";
+    
+    string username, password, email, noTelepon;
+    string namaHewan, jenisHewan;
+    int umurHewan;
+    
+    cout << "Data Pemilik:\n";
+    cout << "Username: ";
+    getline(cin, username);
+    
+    if(cekUsernameTerdaftar(username)) {
+        cout << "Username sudah terdaftar. Silakan gunakan username lain.\n";
+        return;
+    }
+    
+    cout << "Password: ";
+    getline(cin, password);
+    cout << "Email: ";
+    getline(cin, email);
+    cout << "No. Telepon: ";
+    getline(cin, noTelepon);
+    
+    cout << "\nData Hewan Peliharaan:\n";
+    cout << "Nama Hewan: ";
+    getline(cin, namaHewan);
+    cout << "Jenis Hewan: ";
+    getline(cin, jenisHewan);
+    cout << "Umur Hewan (tahun): ";
+    cin >> umurHewan;
+    cin.ignore();
+    
+    Pemilik* newPemilik = new Pemilik{
+        username, password, email, noTelepon,
+        {namaHewan, jenisHewan, umurHewan, "Tidak ada"}, {}, 0, true,
+        NULL, NULL
+    };
+    
+    listPemilik.addToEnd(newPemilik);
+    cout << "\nRegistrasi berhasil! Silakan login dengan username: " << username << "\n";
+}
+
+bool cekUsernameTerdaftar(string username) {
+    // Cek di list pemilik
+    Pemilik* foundPemilik = listPemilik.findPemilikByUsername(username);
+    if (foundPemilik) return true;
+    
+    // Cek di list dokter
+    Dokter* foundDokter = listDokter.findDokterByUsername(username);
+    if (foundDokter) return true;
+    
+    return false;
+}
+
+void loginPemilik() {
+    string username, password;
+    
+    cout << "\n=== LOGIN PEMILIK HEWAN ===\n";
+    cout << "Username: ";
+    getline(cin, username);
+    cout << "Password: ";
+    getline(cin, password);
+    
+    Pemilik* pemilik = listPemilik.findPemilikByUsername(username);
+    if(pemilik && pemilik->password == password) {
+        if(!pemilik->aktif) {
+            cout << "Akun Anda dinonaktifkan. Hubungi administrator.\n";
+            return;
+        }
+        cout << "Login berhasil! Selamat datang " << username << "!\n";
+        menuPemilik(username);
+        return;
+    }
+    
+    cout << "Username atau password salah!\n";
+}
+
+void loginDokter() {
+    string username, password;
+    
+    cout << "\n=== LOGIN DOKTER/ADMIN ===\n";
+    cout << "Username: ";
+    getline(cin, username);
+    cout << "Password: ";
+    getline(cin, password);
+    
+    Dokter* dokter = listDokter.findDokterByUsername(username);
+    if(dokter && dokter->password == password) {
+        if(!dokter->aktif) {
+            cout << "Akun Anda dinonaktifkan. Hubungi administrator.\n";
+            return;
+        }
+        cout << "Login berhasil! Selamat datang " << dokter->nama << "!\n";
+        menuDokter(username);
+        return;
+    }
+    
+    cout << "Username atau password salah!\n";
+}
+
+void lupaPassword() {
+    string username, email;
+    
+    cout << "\n=== LUPA PASSWORD ===\n";
+    cout << "Username: ";
+    getline(cin, username);
+    cout << "Email: ";
+    getline(cin, email);
+    
+    // Cari di data pemilik
+    Pemilik* pemilik = listPemilik.findPemilikByUsername(username);
+    if(pemilik && pemilik->email == email) {
+        string passwordBaru;
+        cout << "Verifikasi berhasil. Masukkan password baru: ";
+        getline(cin, passwordBaru);
+        pemilik->password = passwordBaru;
+        cout << "Password berhasil direset! Silakan login dengan password baru.\n";
+        return;
+    }
+    
+    // Cari di data dokter
+    Dokter* dokter = listDokter.findDokterByUsername(username);
+    if(dokter) {
+        cout << "Untuk reset password dokter, harap hubungi administrator.\n";
+        return;
+    }
+    
+    cout << "Data tidak ditemukan. Pastikan username dan email benar.\n";
+}
+
+void menuPemilik(string username) {
+    int pilihan;
+    Pemilik* pemilikAktif = listPemilik.findPemilikByUsername(username);
+    
+    if(!pemilikAktif) return;
+    
+    while(true) {
+        cout << "\n=== MENU PEMILIK HEWAN ===\n";
+        cout << "Hewan: " << pemilikAktif->hewan.nama << " (" << pemilikAktif->hewan.jenis << ")\n";
+        cout << "1. Buat Janji Temu\n";
+        cout << "2. Lihat Riwayat Pemeriksaan\n";
+        cout << "3. Ganti Password\n";
+        cout << "4. Logout\n";
+        cout << "Pilih menu: ";
+        cin >> pilihan;
+        cin.ignore();
+        
+        switch(pilihan) {
+            case 1:
+                buatJanjiTemu(username);
+                break;
+            case 2:
+                lihatRiwayat(username);
+                break;
+            case 3:
+                gantiPasswordPemilik(username);
+                break;
+            case 4:
+                cout << "Logout berhasil!\n";
+                return;
+            default:
+                cout << "Pilihan tidak valid!\n";
+        }
+    }
+}
+
+void menuDokter(string username) {
+    int pilihan;
+    
+    while(true) {
+        cout << "\n=== MENU DOKTER/ADMIN ===\n";
+        cout << "1. Kelola Data Pasien\n";
+        cout << "2. Kelola Jadwal Janji Temu\n";
+        cout << "3. Kelola Pengguna\n";
+        cout << "4. Lihat Data Pemilik Terdaftar\n";
+        cout << "5. Logout\n";
+        cout << "Pilih menu: ";
+        cin >> pilihan;
+        cin.ignore();
+        
+        switch(pilihan) {
+            case 1:
+                kelolaDataPasien();
+                break;
+            case 2:
+                kelolaJadwal();
+                break;
+            case 3:
+                kelolaPengguna();
+                break;
+            case 4:
+                // Fitur tambahan untuk admin
+                cout << "\n=== DATA PEMILIK TERDAFTAR ===\n";
+                listPemilik.displayAllPemilik();
+                break;
+            case 5:
+                cout << "Logout berhasil!\n";
+                return;
+            default:
+                cout << "Pilihan tidak valid!\n";
+        }
+    }
+}
+
+// ==============================================
+// FUNGSI KELOLA PENGGUNA (DOUBLY LINKED LIST)
+// ==============================================
+
+void kelolaPengguna() {
+    int pilihan;
+    
+    while(true) {
+        cout << "\n=== KELOLA PENGGUNA ===\n";
+        cout << "1. Kelola Data Pemilik\n";
+        cout << "2. Kelola Data Dokter\n";
+        cout << "3. Tambah Dokter Baru\n";
+        cout << "4. Nonaktifkan/Aktifkan Pengguna\n";
+        cout << "5. Reset Password Pengguna\n";
+        cout << "6. Lihat Semua Pengguna\n";
+        cout << "7. Kembali ke Menu Utama\n";
+        cout << "Pilih menu: ";
+        cin >> pilihan;
+        cin.ignore();
+        
+        switch(pilihan) {
+            case 1:
+                kelolaPemilik();
+                break;
+            case 2:
+                kelolaDokter();
+                break;
+            case 3:
+                tambahDokter();
+                break;
+            case 4:
+                nonaktifkanPengguna();
+                break;
+            case 5:
+                resetPasswordPengguna();
+                break;
+            case 6:
+                lihatSemuaPengguna();
+                break;
+            case 7:
+                return;
+            default:
+                cout << "Pilihan tidak valid!\n";
+        }
+    }
+}
+
+void kelolaPemilik() {
+    cout << "\n=== KELOLA DATA PEMILIK ===\n";
+    
+    if(listPemilik.getSize() == 0) {
+        cout << "Tidak ada pemilik terdaftar.\n";
+        return;
+    }
+    
+    listPemilik.displayAllPemilik();
+    
+    cout << "\nPilih pemilik untuk detail lebih lanjut (0 untuk kembali): ";
+    int pilihan;
+    cin >> pilihan;
+    cin.ignore();
+    
+    if(pilihan > 0 && pilihan <= listPemilik.getSize()) {
+        Pemilik* pemilik = listPemilik.getAt(pilihan - 1);
+        if(!pemilik) return;
+        
+        cout << "\n=== DETAIL PEMILIK ===\n";
+        cout << "Username: " << pemilik->username << "\n";
+        cout << "Email: " << pemilik->email << "\n";
+        cout << "No. Telepon: " << pemilik->noTelepon << "\n";
+        cout << "Nama Hewan: " << pemilik->hewan.nama << "\n";
+        cout << "Jenis Hewan: " << pemilik->hewan.jenis << "\n";
+        cout << "Umur Hewan: " << pemilik->hewan.umur << " tahun\n";
+        cout << "Status: " << (pemilik->aktif ? "Aktif" : "Nonaktif") << "\n";
+        
+        cout << "\n1. " << (pemilik->aktif ? "Nonaktifkan" : "Aktifkan") << " akun\n";
+        cout << "2. Reset password\n";
+        cout << "3. Hapus akun\n";
+        cout << "4. Kembali\n";
+        cout << "Pilih aksi: ";
+        
+        int aksi;
+        cin >> aksi;
+        cin.ignore();
+        
+        if(aksi == 1) {
+            pemilik->aktif = !pemilik->aktif;
+            cout << "Akun " << pemilik->username << " berhasil ";
+            cout << (pemilik->aktif ? "diaktifkan" : "dinonaktifkan") << "!\n";
+        } else if(aksi == 2) {
+            string passwordBaru;
+            cout << "Masukkan password baru: ";
+            getline(cin, passwordBaru);
+            pemilik->password = passwordBaru;
+            cout << "Password berhasil direset!\n";
+        } else if(aksi == 3) {
+            char konfirmasi;
+            cout << "Apakah Anda yakin ingin menghapus akun " << pemilik->username << "? (y/n): ";
+            cin >> konfirmasi;
+            if(konfirmasi == 'y' || konfirmasi == 'Y') {
+                listPemilik.removeByUsername(pemilik->username);
+                cout << "Akun berhasil dihapus!\n";
+            }
+        }
+    }
+}
+
+void kelolaDokter() {
+    cout << "\n=== KELOLA DATA DOKTER ===\n";
+    
+    if(listDokter.getSize() == 0) {
+        cout << "Tidak ada dokter terdaftar.\n";
+        return;
+    }
+    
+    listDokter.displayAllDokter();
+    
+    cout << "\nPilih dokter untuk detail lebih lanjut (0 untuk kembali): ";
+    int pilihan;
+    cin >> pilihan;
+    cin.ignore();
+    
+    if(pilihan > 0 && pilihan <= listDokter.getSize()) {
+        Dokter* dokter = listDokter.getAt(pilihan - 1);
+        if(!dokter) return;
+        
+        cout << "\n=== DETAIL DOKTER ===\n";
+        cout << "Username: " << dokter->username << "\n";
+        cout << "Nama: " << dokter->nama << "\n";
+        cout << "Spesialisasi: " << dokter->spesialisasi << "\n";
+        cout << "Status: " << (dokter->aktif ? "Aktif" : "Nonaktif") << "\n";
+        
+        cout << "\n1. " << (dokter->aktif ? "Nonaktifkan" : "Aktifkan") << " akun\n";
+        cout << "2. Reset password\n";
+        cout << "3. Hapus akun\n";
+        cout << "4. Kembali\n";
+        cout << "Pilih aksi: ";
+        
+        int aksi;
+        cin >> aksi;
+        cin.ignore();
+        
+        if(aksi == 1) {
+            dokter->aktif = !dokter->aktif;
+            cout << "Akun " << dokter->username << " berhasil ";
+            cout << (dokter->aktif ? "diaktifkan" : "dinonaktifkan") << "!\n";
+        } else if(aksi == 2) {
+            string passwordBaru;
+            cout << "Masukkan password baru: ";
+            getline(cin, passwordBaru);
+            dokter->password = passwordBaru;
+            cout << "Password berhasil direset!\n";
+        } else if(aksi == 3) {
+            char konfirmasi;
+            cout << "Apakah Anda yakin ingin menghapus akun " << dokter->username << "? (y/n): ";
+            cin >> konfirmasi;
+            if(konfirmasi == 'y' || konfirmasi == 'Y') {
+                listDokter.removeByUsername(dokter->username);
+                cout << "Akun berhasil dihapus!\n";
+            }
+        }
+    }
+}
+
+void tambahDokter() {
+    if(listDokter.getSize() >= 5) {
+        cout << "Maaf, kuota dokter sudah penuh.\n";
+        return;
+    }
+    
+    cout << "\n=== TAMBAH DOKTER BARU ===\n";
+    
+    string username, password, nama, spesialisasi;
+    
+    cout << "Username: ";
+    getline(cin, username);
+    
+    if(cekUsernameTerdaftar(username)) {
+        cout << "Username sudah terdaftar.\n";
+        return;
+    }
+    
+    cout << "Password: ";
+    getline(cin, password);
+    cout << "Nama Lengkap: ";
+    getline(cin, nama);
+    cout << "Spesialisasi: ";
+    getline(cin, spesialisasi);
+    
+    Dokter* newDokter = new Dokter{
+        username, password, nama, spesialisasi, true,
+        NULL, NULL
+    };
+    
+    listDokter.addToEnd(newDokter);
+    cout << "Dokter baru berhasil ditambahkan!\n";
+}
+
+void nonaktifkanPengguna() {
+    cout << "\n=== NONAKTIFKAN/AKTIFKAN PENGGUNA ===\n";
+    
+    cout << "Pilih jenis pengguna:\n";
+    cout << "1. Pemilik Hewan\n";
+    cout << "2. Dokter\n";
+    cout << "Pilihan: ";
+    
+    int jenis;
+    cin >> jenis;
+    cin.ignore();
+    
+    if(jenis == 1) {
+        kelolaPemilik();
+    } else if(jenis == 2) {
+        kelolaDokter();
+    } else {
+        cout << "Pilihan tidak valid!\n";
+    }
+}
+
+void resetPasswordPengguna() {
+    cout << "\n=== RESET PASSWORD PENGGUNA ===\n";
+    
+    cout << "Pilih jenis pengguna:\n";
+    cout << "1. Pemilik Hewan\n";
+    cout << "2. Dokter\n";
+    cout << "Pilihan: ";
+    
+    int jenis;
+    cin >> jenis;
+    cin.ignore();
+    
+    if(jenis == 1) {
+        kelolaPemilik();
+    } else if(jenis == 2) {
+        kelolaDokter();
+    } else {
+        cout << "Pilihan tidak valid!\n";
+    }
+}
+
+void lihatSemuaPengguna() {
+    cout << "\n=== SEMUA PENGGUNA TERDAFTAR ===\n";
+    
+    cout << "\n--- PEMILIK HEWAN ---\n";
+    listPemilik.displayAllPemilik();
+    
+    cout << "\n--- DOKTER & ADMIN ---\n";
+    listDokter.displayAllDokter();
+    
+    cout << "\nTotal Pemilik: " << listPemilik.getSize() << "\n";
+    cout << "Total Dokter/Admin: " << listDokter.getSize() << "\n";
+}
+
+// ==============================================
+// FUNGSI-FUNGSI LAINNYA (DOUBLY LINKED LIST)
+// ==============================================
+
+void buatJanjiTemu(string username) {
+    Pemilik* pemilikAktif = listPemilik.findPemilikByUsername(username);
+    
+    if(!pemilikAktif) return;
+    
+    cout << "\n=== BUAT JANJI TEMU ===\n";
+    cout << "Hewan: " << pemilikAktif->hewan.nama << "\n";
+    
+    if(listJanji.getSize() < 50) {
+        JanjiTemu* newJanji = new JanjiTemu;
+        newJanji->namaPemilik = username;
+        newJanji->namaHewan = pemilikAktif->hewan.nama;
+        
+        cout << "Tanggal (DD/MM/YYYY): ";
+        getline(cin, newJanji->tanggal);
+        cout << "Jam: ";
+        getline(cin, newJanji->jam);
+        cout << "Keluhan: ";
+        getline(cin, newJanji->keluhan);
+        
+        newJanji->status = "Menunggu";
+        newJanji->next = NULL;
+        newJanji->prev = NULL;
+        
+        listJanji.addToEnd(newJanji);
+        cout << "Janji temu berhasil dibuat! Status: Menunggu konfirmasi.\n";
+    } else {
+        cout << "Maaf, kuota janji temu sudah penuh.\n";
+    }
+}
+
+void lihatRiwayat(string username) {
+    Pemilik* pemilikAktif = listPemilik.findPemilikByUsername(username);
+    
+    if(!pemilikAktif) return;
+    
+    cout << "\n=== RIWAYAT PEMERIKSAAN ===\n";
+    cout << "Hewan: " << pemilikAktif->hewan.nama << "\n";
+    cout << "Jenis: " << pemilikAktif->hewan.jenis << "\n";
+    cout << "Umur: " << pemilikAktif->hewan.umur << " tahun\n";
+    cout << "Riwayat Penyakit: " << pemilikAktif->hewan.riwayatPenyakit << "\n";
+    
+    cout << "\nRiwayat Kunjungan:\n";
+    if(pemilikAktif->jumlahRiwayat > 0) {
+        for(int i = 0; i < pemilikAktif->jumlahRiwayat; i++) {
+            cout << "- " << pemilikAktif->riwayatKunjungan[i] << "\n";
+        }
+    } else {
+        cout << "Belum ada riwayat kunjungan.\n";
+    }
+    
+    cout << "\nJanji Temu yang Dijadwalkan:\n";
+    bool adaJanji = false;
+    
+    // Traverse linked list janji temu
+    JanjiTemu* current = listJanji.getHead();
+    while(current) {
+        if(current->namaPemilik == username) {
+            cout << "- Tanggal: " << current->tanggal;
+            cout << " | Jam: " << current->jam;
+            cout << " | Keluhan: " << current->keluhan;
+            cout << " | Status: " << current->status << "\n";
+            adaJanji = true;
+        }
+        current = current->next;
+    }
+    
+    if(!adaJanji) {
+        cout << "Tidak ada janji temu yang dijadwalkan.\n";
+    }
+}
+
+void gantiPasswordPemilik(string username) {
+    string passwordLama, passwordBaru;
+    
+    cout << "\n=== GANTI PASSWORD ===\n";
+    cout << "Password lama: ";
+    getline(cin, passwordLama);
+    
+    Pemilik* pemilik = listPemilik.findPemilikByUsername(username);
+    if(pemilik) {
+        if(pemilik->password == passwordLama) {
+            cout << "Password baru: ";
+            getline(cin, passwordBaru);
+            pemilik->password = passwordBaru;
+            cout << "Password berhasil diubah!\n";
+        } else {
+            cout << "Password lama salah!\n";
+        }
+    }
+}
+
+void kelolaDataPasien() {
+    int pilihan;
+    
+    cout << "\n=== KELOLA DATA PASIEN ===\n";
+    cout << "Daftar Pasien Terdaftar:\n";
+    
+    listPemilik.displayAllPemilik();
+    
+    cout << "\nPilih pasien untuk melihat detail (0 untuk kembali): ";
+    cin >> pilihan;
+    cin.ignore();
+    
+    if(pilihan > 0 && pilihan <= listPemilik.getSize()) {
+        Pemilik* pemilik = listPemilik.getAt(pilihan - 1);
+        if(!pemilik) return;
+        
+        cout << "\n=== DETAIL PASIEN ===\n";
+        cout << "Nama Hewan: " << pemilik->hewan.nama << "\n";
+        cout << "Jenis: " << pemilik->hewan.jenis << "\n";
+        cout << "Umur: " << pemilik->hewan.umur << " tahun\n";
+        cout << "Riwayat Penyakit: " << pemilik->hewan.riwayatPenyakit << "\n";
+        cout << "Pemilik: " << pemilik->username << "\n";
+        cout << "Email: " << pemilik->email << "\n";
+        cout << "Telepon: " << pemilik->noTelepon << "\n";
+        
+        cout << "\n1. Update riwayat penyakit\n";
+        cout << "2. Tambah riwayat kunjungan\n";
+        cout << "3. Kembali\n";
+        cout << "Pilih aksi: ";
+        
+        int aksi;
+        cin >> aksi;
+        cin.ignore();
+        
+        if(aksi == 1) {
+            cout << "Masukkan riwayat penyakit baru: ";
+            getline(cin, pemilik->hewan.riwayatPenyakit);
+            cout << "Riwayat penyakit berhasil diperbarui!\n";
+        } else if(aksi == 2) {
+            if(pemilik->jumlahRiwayat < 10) {
+                cout << "Masukkan riwayat kunjungan: ";
+                getline(cin, pemilik->riwayatKunjungan[pemilik->jumlahRiwayat]);
+                pemilik->jumlahRiwayat++;
+                cout << "Riwayat kunjungan berhasil ditambahkan!\n";
+            } else {
+                cout << "Maaf, kuota riwayat sudah penuh.\n";
+            }
+        }
+    }
+}
+
+void kelolaJadwal() {
+    cout << "\n=== KELOLA JADWAL JANJI TEMU ===\n";
+    
+    if(listJanji.getSize() == 0) {
+        cout << "Tidak ada janji temu yang menunggu.\n";
+        return;
+    }
+    
+    listJanji.displayAllJanji();
+    
+    cout << "Pilih janji untuk mengubah status (0 untuk kembali): ";
+    int pilihan;
+    cin >> pilihan;
+    cin.ignore();
+    
+    if(pilihan > 0 && pilihan <= listJanji.getSize()) {
+        JanjiTemu* janji = listJanji.getAt(pilihan - 1);
+        if(!janji) return;
+        
+        cout << "Ubah status menjadi (Menunggu/Dikonfirmasi/Selesai/Batal): ";
+        getline(cin, janji->status);
+        cout << "Status berhasil diubah menjadi: " << janji->status << "\n";
+    }
+}
+
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <limits>
+
+using namespace std;
+
+// ==============================================
+// STRUCT DASAR HEWAN
+// ==============================================
+struct Hewan {
+    int id;
+    string nama;
+    string jenis;
+    string ras;
+    int umur;
+    string jenis_kelamin;
+};
+
+// ==============================================
+// STRUCT NODE UNTUK DOUBLY LINKED LIST
+// ==============================================
+struct NodeHewan {
+    Hewan data;
+    NodeHewan* next;
+    NodeHewan* prev;
+    
+    NodeHewan(Hewan h) : data(h), next(NULL), prev(NULL) {}
+};
+
+// ==============================================
+// CLASS DOUBLY LINKED LIST UNTUK DATA HEWAN
+// ==============================================
+class DoublyLinkedListHewan {
+private:
+    NodeHewan* head;
+    NodeHewan* tail;
+    int size;
+    int idCounter;
+
+public:
+    DoublyLinkedListHewan() : head(NULL), tail(NULL), size(0), idCounter(1) {}
+
+    ~DoublyLinkedListHewan() {
+        clear();
+    }
+
+    // Fungsi untuk membersihkan input buffer
+    void clearInputBuffer() {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+
+    // Menambahkan data hewan baru
+    void tambahHewan(Hewan hewanBaru) {
+        hewanBaru.id = idCounter++;
+        NodeHewan* newNode = new NodeHewan(hewanBaru);
+        
+        if (!head) {
+            head = tail = newNode;
+        } else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+        size++;
+    }
+
+    // Mencari hewan berdasarkan ID (linear search)
+    NodeHewan* cariByID(int id) {
+        NodeHewan* current = head;
+        while (current) {
+            if (current->data.id == id) {
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+
+    // Mencari hewan berdasarkan Nama (linear search)
+    NodeHewan* cariByNama(string nama) {
+        NodeHewan* current = head;
+        while (current) {
+            if (current->data.nama == nama) {
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+
+    // Mencari hewan berdasarkan Jenis (sequential search)
+    void cariByJenis(string jenis) {
+        NodeHewan* current = head;
+        bool ditemukan = false;
+        
+        cout << "\n=== HASIL PENCARIAN UNTUK JENIS '" << jenis << "' ===\n";
+        cout << string(80, '=') << "\n";
+        cout << setw(5) << "ID" << setw(15) << "Nama" << setw(15) << "Jenis" 
+             << setw(15) << "Ras" << setw(10) << "Umur" << setw(15) << "Jenis Kelamin\n";
+        cout << string(80, '=') << "\n";
+        
+        while (current) {
+            if (current->data.jenis == jenis) {
+                cout << setw(5) << current->data.id 
+                     << setw(15) << current->data.nama 
+                     << setw(15) << current->data.jenis 
+                     << setw(15) << current->data.ras 
+                     << setw(10) << current->data.umur 
+                     << setw(15) << current->data.jenis_kelamin << "\n";
+                ditemukan = true;
+            }
+            current = current->next;
+        }
+        
+        if (!ditemukan) {
+            cout << "Tidak ada data hewan dengan jenis '" << jenis << "'\n";
+        }
+        cout << string(80, '=') << "\n";
+    }
+
+    // Menghapus hewan berdasarkan ID
+    bool hapusByID(int id) {
+        NodeHewan* node = cariByID(id);
+        if (!node) return false;
+        
+        if (node->prev) {
+            node->prev->next = node->next;
+        } else {
+            head = node->next;
+        }
+        
+        if (node->next) {
+            node->next->prev = node->prev;
+        } else {
+            tail = node->prev;
+        }
+        
+        delete node;
+        size--;
+        return true;
+    }
+
+    // Menampilkan semua data hewan
+    void tampilkanSemua() {
+        if (size == 0) {
+            cout << "Tidak ada data hewan.\n";
+            return;
+        }
+        
+        cout << "\n" << string(80, '=') << "\n";
+        cout << "                       DATA HEWAN KLINIK\n";
+        cout << string(80, '=') << "\n";
+        cout << setw(5) << "ID" << setw(15) << "Nama" << setw(15) << "Jenis" 
+             << setw(15) << "Ras" << setw(10) << "Umur" << setw(15) << "Jenis Kelamin\n";
+        cout << string(80, '=') << "\n";
+        
+        NodeHewan* current = head;
+        while (current) {
+            cout << setw(5) << current->data.id 
+                 << setw(15) << current->data.nama 
+                 << setw(15) << current->data.jenis 
+                 << setw(15) << current->data.ras 
+                 << setw(10) << current->data.umur 
+                 << setw(15) << current->data.jenis_kelamin << "\n";
+            current = current->next;
+        }
+        cout << string(80, '=') << "\n";
+        cout << "Total data: " << size << " hewan\n";
+    }
+
+    // Sorting berdasarkan ID (Insertion Sort pada linked list)
+    void sortByID() {
+        if (!head || !head->next) return;
+        
+        NodeHewan* sorted = NULL;
+        NodeHewan* current = head;
+        
+        while (current) {
+            NodeHewan* next = current->next;
+            current->prev = current->next = NULL;
+            
+            // Insert current node into sorted list
+            if (!sorted) {
+                sorted = current;
+            } else if (sorted->data.id >= current->data.id) {
+                current->next = sorted;
+                sorted->prev = current;
+                sorted = current;
+            } else {
+                NodeHewan* temp = sorted;
+                while (temp->next && temp->next->data.id < current->data.id) {
+                    temp = temp->next;
+                }
+                current->next = temp->next;
+                if (temp->next) {
+                    temp->next->prev = current;
+                }
+                temp->next = current;
+                current->prev = temp;
+            }
+            current = next;
+        }
+        head = sorted;
+        
+        // Update tail
+        tail = head;
+        while (tail && tail->next) {
+            tail = tail->next;
+        }
+    }
+
+    // Sorting berdasarkan Nama (Bubble Sort pada linked list)
+    void sortByNama() {
+        if (!head || !head->next) return;
+        
+        bool swapped;
+        do {
+            swapped = false;
+            NodeHewan* current = head;
+            
+            while (current->next) {
+                if (current->data.nama > current->next->data.nama) {
+                    // Swap data
+                    Hewan temp = current->data;
+                    current->data = current->next->data;
+                    current->next->data = temp;
+                    swapped = true;
+                }
+                current = current->next;
+            }
+        } while (swapped);
+    }
+
+    // Sorting berdasarkan Umur (Selection Sort pada linked list)
+    void sortByUmur() {
+        if (!head || !head->next) return;
+        
+        NodeHewan* current = head;
+        
+        while (current) {
+            NodeHewan* minNode = current;
+            NodeHewan* temp = current->next;
+            
+            while (temp) {
+                if (temp->data.umur < minNode->data.umur) {
+                    minNode = temp;
+                }
+                temp = temp->next;
+            }
+            
+            // Swap data
+            if (minNode != current) {
+                Hewan tempData = current->data;
+                current->data = minNode->data;
+                minNode->data = tempData;
+            }
+            
+            current = current->next;
+        }
+    }
+
+    // Mendapatkan node pada posisi tertentu
+    NodeHewan* getAt(int index) {
+        if (index < 0 || index >= size) return NULL;
+        
+        NodeHewan* current = head;
+        for (int i = 0; i < index && current; i++) {
+            current = current->next;
+        }
+        return current;
+    }
+
+    // Mendapatkan jumlah data
+    int getSize() { return size; }
+
+    // Mendapatkan ID counter
+    int getIDCounter() { return idCounter; }
+
+    // Set ID counter
+    void setIDCounter(int counter) { idCounter = counter; }
+
+    // Membersihkan semua data
+    void clear() {
+        NodeHewan* current = head;
+        while (current) {
+            NodeHewan* temp = current;
+            current = current->next;
+            delete temp;
+        }
+        head = tail = NULL;
+        size = 0;
+        idCounter = 1;
+    }
+
+    // Mendapatkan head
+    NodeHewan* getHead() { return head; }
+};
+
+// ==============================================
+// OBJEK LINKED LIST GLOBAL
+// ==============================================
+DoublyLinkedListHewan listHewan;
+
+// ==============================================
+// PROTOTYPE FUNGSI
+// ==============================================
+void tambahDataHewan();
+void tampilkanDataHewan();
+void editDataHewan();
+void hapusDataHewan();
+void cariHewan();
+void menuSorting();
+void menuUtama();
+
+// ==============================================
+// FUNGSI UTAMA
+// ==============================================
+int main() {
+    cout << "========================================\n";
+    cout << "   SISTEM MANAJEMEN DATA HEWAN KLINIK\n";
+    cout << "       (Doubly Linked List Version)\n";
+    cout << "========================================\n";
+    
+    // Data sample untuk testing
+    Hewan hewan1 = {1, "Budi", "Kucing", "Persia", 2, "Jantan"};
+    Hewan hewan2 = {2, "Molly", "Anjing", "Golden Retriever", 3, "Betina"};
+    Hewan hewan3 = {3, "Snowy", "Kelinci", "Holland Lop", 1, "Betina"};
+    
+    listHewan.tambahHewan(hewan1);
+    listHewan.tambahHewan(hewan2);
+    listHewan.tambahHewan(hewan3);
+    listHewan.setIDCounter(4);
+    
+    // Sort data awal berdasarkan ID
+    listHewan.sortByID();
+    
+    menuUtama();
+    
+    return 0;
+}
+
+// ==============================================
+// IMPLEMENTASI FUNGSI-FUNGSI
+// ==============================================
+void tambahDataHewan() {
+    if (listHewan.getSize() >= 1000) {
+        cout << "Kapasitas data hewan penuh! Tidak bisa menambah data baru.\n";
+        return;
+    }
+    
+    Hewan hewanBaru;
+    cout << "\n=== TAMBAH DATA HEWAN BARU ===\n";
+    
+    hewanBaru.id = listHewan.getIDCounter();
+    cout << "ID Hewan: " << hewanBaru.id << " (otomatis)\n";
+    
+    cout << "Nama Hewan: ";
+    listHewan.clearInputBuffer();
+    getline(cin, hewanBaru.nama);
+    
+    cout << "Jenis (kucing/anjing/kelinci/dll): ";
+    getline(cin, hewanBaru.jenis);
+    
+    cout << "Ras: ";
+    getline(cin, hewanBaru.ras);
+    
+    cout << "Umur (tahun): ";
+    while (!(cin >> hewanBaru.umur) || hewanBaru.umur < 0) {
+        cout << "Umur harus angka positif: ";
+        listHewan.clearInputBuffer();
+    }
+    
+    listHewan.clearInputBuffer();
+    cout << "Jenis Kelamin (jantan/betina): ";
+    getline(cin, hewanBaru.jenis_kelamin);
+    
+    listHewan.tambahHewan(hewanBaru);
+    listHewan.sortByID();
+    cout << "\nData hewan berhasil ditambahkan!\n";
+}
+
+void tampilkanDataHewan() {
+    listHewan.tampilkanSemua();
+}
+
+void editDataHewan() {
+    if (listHewan.getSize() == 0) {
+        cout << "Tidak ada data hewan untuk diedit.\n";
+        return;
+    }
+    
+    int id;
+    cout << "\n=== EDIT DATA HEWAN ===\n";
+    cout << "Masukkan ID hewan yang akan diedit: ";
+    cin >> id;
+    
+    NodeHewan* node = listHewan.cariByID(id);
+    if (!node) {
+        cout << "Data hewan dengan ID " << id << " tidak ditemukan!\n";
+        return;
+    }
+    
+    cout << "\nData saat ini:\n";
+    cout << "Nama: " << node->data.nama << "\n";
+    cout << "Jenis: " << node->data.jenis << "\n";
+    cout << "Ras: " << node->data.ras << "\n";
+    cout << "Umur: " << node->data.umur << "\n";
+    cout << "Jenis Kelamin: " << node->data.jenis_kelamin << "\n";
+    
+    cout << "\nMasukkan data baru:\n";
+    listHewan.clearInputBuffer();
+    
+    cout << "Nama Hewan: ";
+    getline(cin, node->data.nama);
+    
+    cout << "Jenis: ";
+    getline(cin, node->data.jenis);
+    
+    cout << "Ras: ";
+    getline(cin, node->data.ras);
+    
+    cout << "Umur: ";
+    while (!(cin >> node->data.umur) || node->data.umur < 0) {
+        cout << "Umur harus angka positif: ";
+        listHewan.clearInputBuffer();
+    }
+    
+    listHewan.clearInputBuffer();
+    cout << "Jenis Kelamin: ";
+    getline(cin, node->data.jenis_kelamin);
+    
+    // Sort ulang setelah edit
+    listHewan.sortByID();
+    cout << "\nData hewan berhasil diupdate!\n";
+}
+
+void hapusDataHewan() {
+    if (listHewan.getSize() == 0) {
+        cout << "Tidak ada data hewan untuk dihapus.\n";
+        return;
+    }
+    
+    int id;
+    cout << "\n=== HAPUS DATA HEWAN ===\n";
+    cout << "Masukkan ID hewan yang akan dihapus: ";
+    cin >> id;
+    
+    NodeHewan* node = listHewan.cariByID(id);
+    if (!node) {
+        cout << "Data hewan dengan ID " << id << " tidak ditemukan!\n";
+        return;
+    }
+    
+    cout << "\nData hewan yang akan dihapus:\n";
+    cout << "ID: " << node->data.id << "\n";
+    cout << "Nama: " << node->data.nama << "\n";
+    cout << "Jenis: " << node->data.jenis << "\n";
+    cout << "Ras: " << node->data.ras << "\n";
+    
+    cout << "\nApakah Anda yakin ingin menghapus data ini? (y/n): ";
+    char konfirmasi;
+    cin >> konfirmasi;
+    
+    if (konfirmasi == 'y' || konfirmasi == 'Y') {
+        if (listHewan.hapusByID(id)) {
+            cout << "Data hewan berhasil dihapus!\n";
+        } else {
+            cout << "Gagal menghapus data hewan!\n";
+        }
+    } else {
+        cout << "Penghapusan dibatalkan.\n";
+    }
+}
+
+void cariHewan() {
+    if (listHewan.getSize() == 0) {
+        cout << "Tidak ada data hewan untuk dicari.\n";
+        return;
+    }
+    
+    int pilihan;
+    cout << "\n=== PENCARIAN HEWAN ===\n";
+    cout << "1. Cari berdasarkan ID\n";
+    cout << "2. Cari berdasarkan Nama\n";
+    cout << "3. Cari berdasarkan Jenis\n";
+    cout << "Pilihan: ";
+    cin >> pilihan;
+    
+    if (pilihan == 1) {
+        int id;
+        cout << "Masukkan ID hewan: ";
+        cin >> id;
+        NodeHewan* node = listHewan.cariByID(id);
+        if (node) {
+            cout << "\nData ditemukan:\n";
+            cout << string(40, '-') << "\n";
+            cout << "ID: " << node->data.id << "\n";
+            cout << "Nama: " << node->data.nama << "\n";
+            cout << "Jenis: " << node->data.jenis << "\n";
+            cout << "Ras: " << node->data.ras << "\n";
+            cout << "Umur: " << node->data.umur << " tahun\n";
+            cout << "Jenis Kelamin: " << node->data.jenis_kelamin << "\n";
+            cout << string(40, '-') << "\n";
+        } else {
+            cout << "Data tidak ditemukan!\n";
+        }
+    }
+    else if (pilihan == 2) {
+        string nama;
+        cout << "Masukkan nama hewan: ";
+        listHewan.clearInputBuffer();
+        getline(cin, nama);
+        
+        // Sort dulu berdasarkan nama
+        listHewan.sortByNama();
+        NodeHewan* node = listHewan.cariByNama(nama);
+        if (node) {
+            cout << "\nData ditemukan:\n";
+            cout << string(40, '-') << "\n";
+            cout << "ID: " << node->data.id << "\n";
+            cout << "Nama: " << node->data.nama << "\n";
+            cout << "Jenis: " << node->data.jenis << "\n";
+            cout << "Ras: " << node->data.ras << "\n";
+            cout << "Umur: " << node->data.umur << " tahun\n";
+            cout << "Jenis Kelamin: " << node->data.jenis_kelamin << "\n";
+            cout << string(40, '-') << "\n";
+        } else {
+            cout << "Data tidak ditemukan!\n";
+        }
+        // Kembalikan ke sort by ID
+        listHewan.sortByID();
+    }
+    else if (pilihan == 3) {
+        string jenis;
+        cout << "Masukkan jenis hewan: ";
+        listHewan.clearInputBuffer();
+        getline(cin, jenis);
+        listHewan.cariByJenis(jenis);
+    }
+    else {
+        cout << "Pilihan tidak valid!\n";
+    }
+}
+
+void menuSorting() {
+    if (listHewan.getSize() == 0) {
+        cout << "Tidak ada data hewan untuk di-sort.\n";
+        return;
+    }
+    
+    int pilihan;
+    cout << "\n=== SORTING DATA HEWAN ===\n";
+    cout << "1. Sort by ID\n";
+    cout << "2. Sort by Nama\n";
+    cout << "3. Sort by Umur\n";
+    cout << "Pilihan: ";
+    cin >> pilihan;
+    
+    if (pilihan == 1) {
+        listHewan.sortByID();
+        cout << "Data berhasil diurutkan berdasarkan ID!\n";
+    } else if (pilihan == 2) {
+        listHewan.sortByNama();
+        cout << "Data berhasil diurutkan berdasarkan Nama!\n";
+    } else if (pilihan == 3) {
+        listHewan.sortByUmur();
+        cout << "Data berhasil diurutkan berdasarkan Umur!\n";
+    } else {
+        cout << "Pilihan tidak valid!\n";
+        return;
+    }
+    
+    listHewan.tampilkanSemua();
+}
+
+void menuUtama() {
+    while (true) {
+        cout << "\n=== SISTEM MANAJEMEN DATA HEWAN KLINIK ===\n";
+        cout << "1. Tambah Data Hewan\n";
+        cout << "2. Tampilkan Semua Data Hewan\n";
+        cout << "3. Edit Data Hewan\n";
+        cout << "4. Hapus Data Hewan\n";
+        cout << "5. Cari Hewan\n";
+        cout << "6. Sorting Data Hewan\n";
+        cout << "7. Keluar\n";
+        cout << "Pilihan: ";
+        
+        int pilihan;
+        cin >> pilihan;
+        
+        switch (pilihan) {
+            case 1:
+                tambahDataHewan();
+                break;
+            case 2:
+                tampilkanDataHewan();
+                break;
+            case 3:
+                editDataHewan();
+                break;
+            case 4:
+                hapusDataHewan();
+                break;
+            case 5:
+                cariHewan();
+                break;
+            case 6:
+                menuSorting();
+                break;
+            case 7:
+                cout << "Terima kasih telah menggunakan sistem manajemen data hewan!\n";
+                return;
+            default:
+                cout << "Pilihan tidak valid! Silakan pilih 1-7.\n";
+                listHewan.clearInputBuffer();
+        }
+    }
+}
+
+#include <iostream>
+#include <cstring>
+#include <ctime>
+
+using namespace std;
+
+struct Dokter{
+	char nama[50];
+	char spesialisasi[50];
+	char jadwal[100];
+	char kontak[50];
+	Dokter* next;
+	Dokter* prev;
+};
+
+const char* HARI[] = {"Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"};
+
+Dokter** daftarDokter = NULL;
+int jumlahDokter = 0;
+int kapasitas = 0;
+
+// head untuk linked list pencarian
+Dokter* headPencarian = NULL;
+Dokter* tailPencarian = NULL;
+
+// head untuk linked list antrian
+Dokter* headAntrian = NULL;
+Dokter* tailAntrian = NULL;
+
+void toLower(char* str){
+	for(int i = 0; str[i]; i++){
+		str[i] = tolower(str[i]);
+	}
+}
+
+void tambahDokterArray(Dokter* dokter) {
+	if(jumlahDokter >= kapasitas){
+		kapasitas = kapasitas == 0 ? 5 : kapasitas * 2;
+		Dokter** newArray = new Dokter*[kapasitas];
+		
+		for (int i = 0; i < jumlahDokter; i++){
+			newArray[i] = daftarDokter[i];
+		}
+		
+		delete[] daftarDokter;
+		daftarDokter = newArray;
+	}
+	
+	daftarDokter[jumlahDokter] = dokter;
+	jumlahDokter;
+}
+
+void tambahDokter(){
+	Dokter* dokterBaru = new Dokter;
+	
+	cout << "Nama: ";
+	cin.ignore();
+	cin.getline(dokterBaru->nama, 50);
+	
+	cout << "Spesialisasi: ";
+	cin.getline(dokterBaru->spesialisasi, 50);
+	
+	cout << "Jadwal Praktik: ";
+	cin.getline(dokterBaru->jadwal, 100);
+	
+	cout << "Kontak: ";
+	cin.getline(dokterBaru->kontak, 20);
+	
+	dokterBaru->next = NULL;
+	dokterBaru->prev = NULL;
+	
+	tambahDokterArray(dokterBaru);
+	
+	// menambahkan ke doubly linked list untuk antrian
+	if(headAntrian == NULL){
+		headAntrian = dokterBaru;
+		tailAntrian = dokterBaru;
+		headAntrian->next = headAntrian;
+		tailAntrian->prev = tailAntrian;
+	} else {
+		tailAntrian->next = dokterBaru;
+		dokterBaru->prev = tailAntrian;
+		dokterBaru->next = headAntrian;
+		headAntrian->prev = dokterBaru;
+		tailAntrian = dokterBaru;
+	}
+	
+	cout << "Dokter berhasil ditambahkan!\n";
+}
+
+void editDokter(){
+	if(jumlahDokter == 0){
+		cout << "Tidak ada data dokter!\n";
+		return;
+	}
+	
+	char namaCari[50];
+	cout << "Masukkan nama dokter yang akan diedit: ";
+	cin.ignore();
+	cin.getline(namaCari, 50);
+	
+	for(int i = 0; i < jumlahDokter; i++){
+		if(strcmp(daftarDokter[i]->nama, namaCari) == 0) {
+			cout << "Data ditemukan. Masukkan data baru:\n";
+			
+			cout << "Nama: ";
+			cin.getline(daftarDokter[i]->nama, 50);
+			
+			cout << "Speasialisasi: ";
+			cin.getline(daftarDokter[i]->spesialisasi, 50);
+			
+			cout << "Jadwal Praktik: ";
+			cin.getline(daftarDokter[i]->jadwal, 100);
+			
+			cout << "Kontak: ";
+			cin.getline(daftarDokter[i]->kontak, 20);
+			
+			cout << "Data berhasil diupdate!\n";
+			return;
+		}
+	}
+	
+	cout << "Dokter tidak ditemukan!\n";
+}
+
+void hapusDokter(){
+	if(jumlahDokter == 0){
+		cout << "Tidak ada data dokter!\n";
+		return;
+	}
+	
+	char namaCari[50];
+	cout << "Masukkan nama dokter yang akan dihapus: ";
+	cin.ignore();
+	cin.getline(namaCari, 50);
+	
+	for(int i = 0; i < jumlahDokter; i++){
+		if(strcmp(daftarDokter[i]->nama, namaCari) == 0){
+			// hapus dari doubly linked list antrian jika ada
+			Dokter* current = headAntrian;
+			if(current != NULL){
+				do{
+					if (current == daftarDokter[i]) {
+                        if (current == headAntrian && current == tailAntrian) {
+                            // Hanya satu elemen dalam list
+                            headAntrian = NULL;
+                            tailAntrian = NULL;
+                        } else if (current == headAntrian) {
+                            // Hapus dari awal
+                            headAntrian = headAntrian->next;
+                            headAntrian->prev = tailAntrian;
+                            tailAntrian->next = headAntrian;
+                        } else if (current == tailAntrian) {
+                            // Hapus dari akhir
+                            tailAntrian = tailAntrian->prev;
+                            tailAntrian->next = headAntrian;
+                            headAntrian->prev = tailAntrian;
+                        } else {
+                            // Hapus dari tengah
+                            current->prev->next = current->next;
+                            current->next->prev = current->prev;
+						}
+						break;
+					}
+					current = current->next;
+				} while(current != headAntrian);
+			}
+			
+			delete daftarDokter[i];
+			
+			for(int j = 0; j < jumlahDokter - 1; j++){
+				daftarDokter[j] = daftarDokter[j + 1];
+			}
+			
+			jumlahDokter--;
+			cout << "Dokter berhasil dihapus!\n";
+			return;
+		}
+	}
+	
+	cout << "Dokter tidak ditemukan!\n";
+}
+
+void tambahKePencarian(Dokter* dokter){
+	Dokter* newNode = new Dokter;
+	*newNode = *dokter;
+	newNode->next = headPencarian;
+	newNode->prev = NULL;
+	
+	if(headPencarian != NULL){
+		headPencarian->prev = newNode;
+	} else {
+		tailPencarian = newNode;
+	}
+	
+	headPencarian = newNode;
+}
+
+void cariBerdasarkanNama(){
+	if(jumlahDokter == 0) {
+		cout << "Tidak ada data dokter!\n";
+		return;
+	}
+	
+	char namaCari[50];
+	cout << "Masukkan nama dokter: ";
+	cin.ignore();
+	cin.getline(namaCari, 50);
+	
+	char namaCariLower[50];
+	strcpy(namaCariLower, namaCari);
+	toLower(namaCariLower);
+	
+	bool ditemukan = false;
+	
+	for(int i = 0; i < jumlahDokter; i++){
+		char namaDokterLower[50];
+		strcpy(namaDokterLower, daftarDokter[i]->nama);
+		toLower(namaDokterLower);
+		
+		if(strstr(namaDokterLower, namaCariLower) != NULL){
+			if(!ditemukan){
+				cout << "\nHasil pencarian:\n";
+				cout << "=====================================\n";
+				ditemukan = true;
+			}
+			
+			cout << "Nama: " << daftarDokter[i]->nama << endl;
+			cout << "Spesialisasi: " << daftarDokter[i]->spesialisasi << endl;
+			cout << "Jadwal: " << daftarDokter[i]->jadwal << endl;
+			cout << "Kontak: " << daftarDokter[i]->kontak << endl;
+			cout << "=========================================\n";
+			
+			tambahKePencarian(daftarDokter[i]);
+		}
+	}
+	
+	if(!ditemukan){
+		cout << "Dokter tidak ditemukan!\n";
+	}
+}
+
+void cariBerdasarkanSpesialisasi(){
+	if(jumlahDokter == 0){
+		cout << "Tidak ada data dokter!\n";
+		return;
+	}
+	
+	char spesialisasiCari[50];
+	cout << "Masukkan spesialisasi: ";
+	cin.ignore();
+	cin.getline(spesialisasiCari, 50);
+	
+	char spesialisasiCariLower[50];
+	strcpy(spesialisasiCariLower, spesialisasiCari);
+	toLower(spesialisasiCariLower);
+	
+	bool ditemukan = false;
+	
+	for(int i = 0; i < jumlahDokter; i++){
+		char spesialisasiDokterLower[50];
+		strcpy(spesialisasiDokterLower, daftarDokter[i]->spesialisasi);
+		toLower(spesialisasiDokterLower);
+		
+		
+		if(strstr(spesialisasiDokterLower, spesialisasiCariLower) != NULL) {
+			if(!ditemukan){
+				cout << "\nHasil pencarian:\n";
+				cout << "==================================\n";
+				ditemukan = true;
+			}
+			
+			cout << "Nama: " << daftarDokter[i]->nama << endl;
+			cout << "Spesialisasi: " << daftarDokter[i]->spesialisasi << endl;
+			cout << "Jadwal: " << daftarDokter[i]->jadwal << endl;
+			cout << "Kontak: " << daftarDokter[i]->kontak << endl;
+			cout << "====================================\n";
+			
+			tambahKePencarian(daftarDokter[i]);
+		}
+	}
+	
+	if(!ditemukan){
+		cout << "Dokter dengan spesialisasi tersebut tidak ditemukan!\n";
+	}
+}
+
+void tampilkanDokterAktifHariIni(){
+	if(jumlahDokter == 0){
+		cout << "Tidak ada data dokter!\n";
+		return;
+	}
+	
+	time_t now = time(0);
+	tm* ltm = localtime(&now);
+	int hariIni = ltm->tm_wday;
+	
+	int indexHari = (hariIni + 6) % 7;
+	
+	cout << "Dokter Aktif Hari Ini (" << HARI[indexHari] << "):\n";
+	cout << "=========================================\n";
+	
+	bool adaDokterAktif = false;
+	
+	for(int i = 0; i < jumlahDokter; i++){
+		char jadwalLower[100];
+		strcpy(jadwalLower, daftarDokter[i]->jadwal);
+		toLower(jadwalLower);
+		
+		char hariIniLower[20];
+		strcpy(hariIniLower, HARI[indexHari]);
+		toLower(hariIniLower);
+		
+		if(strstr(jadwalLower, hariIniLower) != NULL){
+			cout << "Nama: " << daftarDokter[i]->nama << endl;
+			cout << "Spesialisasi: " << daftarDokter[i]->spesialisasi << endl;
+			cout << "Jadwal: " << daftarDokter[i]->jadwal << endl;
+			cout << "Kontak: " << daftarDokter[i]->kontak << endl;
+			adaDokterAktif = true;
+		}
+	}
+	
+	if(!adaDokterAktif){
+		cout << "Tidak ada dokter yang aktif hari ini.\n";
+	}
+}
+
+void tampilkanSemuaDokter(){
+	if(jumlahDokter == 0){
+		cout << "Tidak ada data dokter!\n";
+		return;
+	}
+	
+	cout << "Daftar Semua Dokter:\n";
+	cout << "=====================================\n";
+	
+	for (int i = 0; i < jumlahDokter; i++){
+		cout << "Dokter #" << i + 1 << endl;
+        cout << "Nama: " << daftarDokter[i]->nama << endl;
+        cout << "Spesialisasi: " << daftarDokter[i]->spesialisasi << endl;
+        cout << "Jadwal: " << daftarDokter[i]->jadwal << endl;
+        cout << "Kontak: " << daftarDokter[i]->kontak << endl;
+        cout << "=========================================\n";
+	}
+}
+
+void tampilkanRiwayatPencarian(){
+	if(headPencarian == NULL){
+		cout << "Belum ada riwayat pencarian!\n";
+		return;
+	}
+	
+	cout << "Riwayat pencarian (dari yang terbaru):\n";
+	cout << "=========================================\n";
+	
+	Dokter* current = headPencarian;
+	int counter = 1;
+	
+	while (current != NULL){
+		cout << "Pencarian #" << counter << endl;
+		cout << "Nama: " << current->nama << endl;
+		cout << "Spesialisasi: " << current->spesialisasi << endl;
+		cout << "Jadwal: " << current->jadwal << endl;
+		cout << "Kontak: " << current->kontak << endl;
+		cout << "=========================================\n";
+		
+		current = current->next;
+		counter++;
+	}
+}
+
+void tampilkanRiwayatPencarianTerbalik(){
+	if(tailPencarian == NULL){
+		cout << "Belum ada riwayat pencarian!\n";
+		return;
+	}
+	
+	cout << "Riwayat pencarian (dari yang terlama):\n";
+	cout << "=========================================\n";
+	
+	Dokter* current = tailPencarian;
+	int counter = 1;
+	
+	while(current != NULL){
+		cout << "Pencarian #" << counter << endl;
+		cout << "Nama: " << current->nama << endl;
+		cout << "Spesialisasi: " << current->spesialisasi << endl;
+		cout << "Jadwal: " << current->jadwal << endl;
+		cout << "Kontak: " << current->kontak << endl;
+		cout << "=========================================\n";
+		
+		current = current->prev;
+		counter++;
+	}
+}
+
+void tampilkanAntrian(){
+	if(headAntrian == NULL){
+		cout << "Tidak ada dokter dalam antrian!\n";
+		return;
+	}
+	
+	cout << "Antrian Dokter(circular Doubly Linked List):\n";
+	cout << "=========================================\n";
+	
+	Dokter* current = headAntrian;
+	int counter = 1;
+	
+	do {
+		cout << "Antrian #" << counter << endl;
+		cout << "Nama: " << current->nama << endl;
+		cout << "Spesialisasi: " << current->spesialisasi << endl;
+		cout << "Jadwal: " << current->jadwal << endl;
+		cout << "Kontak: " << current->kontak << endl;
+		cout << "=========================================\n";
+		
+		current = current->next;
+		counter++; 
+	} while (current != headAntrian);
+}
+
+void tampilkanAntrianTerbalik(){
+	if(tailAntrian == NULL){
+		cout << "Tidak ada dokter dalam antrian!\n";
+		return;
+	}
+	
+	cout << "Antrian Dokter (Terbalik - Circular Doubly Linked list):\n";
+	cout << "=========================================\n";
+	
+	Dokter* current = tailAntrian;
+	int counter = 1;
+	
+	do {
+		cout << "Antrian #" << counter << endl;
+		cout << "Nama: " << current->nama << endl;
+		cout << "Spesialisasi: " << current->spesialisasi << endl;
+		cout << "Jadwal: " << current->jadwal << endl;
+		cout << "Kontak: " << current->kontak << endl;
+		cout << "=========================================\n";
+		
+		current = current->prev;
+		counter++;
+	} while (current != tailAntrian);
+}
+
+void bersihkanMemory(){
+	for(int i = 0; i < jumlahDokter; i++){
+		delete daftarDokter[i];
+	}
+	
+	delete[] daftarDokter;
+	
+	// hapus doubly linked list pencarian
+	Dokter* current = headPencarian;
+	while (current != NULL){
+		Dokter* temp = current;
+		current = current->next;
+		delete temp;
+	}
+	
+	headPencarian = NULL;
+	tailPencarian = NULL;
+	
+	// hapus circular doubly linked list antrian
+	if(headAntrian != NULL){
+		tailAntrian->next = NULL;
+		headAntrian->prev = NULL;
+		
+		current = headAntrian;
+		while (current != NULL){
+			Dokter* temp = current;
+			current = current->next;
+			delete temp;
+		}
+		
+		headAntrian = NULL;
+		tailAntrian = NULL;
+	}
+}
+
+int main(){
+	int pilihan;
+	
+	do {
+		cout << "\n==== SISTEM MANAJEMEN DOKTER HEWAN (DOUBLY LINKED LIST) ====\n";
+		cout << "1. Tambah Dokter\n";
+		cout << "2. Edit Dokter\n";
+		cout << "3. Hapus Dokter\n";
+		cout << "4. Cari Dokter Berdasarkan Nama\n";
+		cout << "5. Cari Dokter Berdasarkan Spesialisasi\n";
+		cout << "6. Tampilkan Dokter Aktif Hari ini\n";
+		cout << "7. Tampilkan Semua Dokter\n";
+		cout << "8. Tampilkan Riwayat Pencarian (dari terbaru)\n";
+		cout << "9. Tampilkan Riwayat Pencarian (dari terlama)\n";
+		cout << "10. Tampilkan Antrian Dokter\n";
+		cout << "11. Tampilkan Antrian Dokter (Terbalik)\n";
+		cout << "0. Keluar\n";
+		cout << "Pilihan: ";
+		cin >> pilihan;
+		
+		switch (pilihan) {
+			case 1:
+				tambahDokter();
+				break;
+			case 2:
+				editDokter();
+				break;
+			case 3:
+				hapusDokter();
+				break;
+			case 4:
+				cariBerdasarkanNama();
+				break;
+			case 5:
+				cariBerdasarkanSpesialisasi();
+				break;
+			case 6:
+				tampilkanDokterAktifHariIni;
+				break;
+			case 7:
+				tampilkanSemuaDokter();
+				break;
+			case 8:
+				tampilkanRiwayatPencarian();
+				break;
+			case 9:
+				tampilkanRiwayatPencarianTerbalik();
+				break;
+			case 10:
+				tampilkanAntrian();
+				break;
+			case 11:
+				tampilkanAntrianTerbalik();
+				break;
+			case 0:
+				cout << "Terima Kasih\n";
+				break;
+			default:
+				cout << "Pilihan tidak valid\n";
+		}
+	} while (pilihan != 0);
+	
+	bersihkanMemory();
+	return 0;
+}
+
+#include <iostream>
+#include <string>
+#include <limits>
+#include <ctime>
+#include <iomanip>
+#include <cctype>
+
+using namespace std;
+
+enum Status { MENUNGGU, DITERIMA, SELESAI, DIBATALKAN };
+
+struct JanjiTemu {
+    string idHewan;
+    string namaHewan;
+    string jenisHewan;
+    string pemilik;
+    string dokter;
+    string tanggal;
+    string waktu;
+    string keluhan;
+    Status status;
+    JanjiTemu* next;
+    JanjiTemu* prev;
+};
+
+class petCompanyJanjiTemu {
+private:
+    JanjiTemu* head;
+    JanjiTemu* tail;
+    int totalJanji;
+    
+public:
+    petCompanyJanjiTemu(){
+        head = NULL;
+        tail = NULL;
+        totalJanji = 0;
+    }
+    
+    ~petCompanyJanjiTemu(){
+        bersihkanSemuaJanji();
+    }
+    
+    string statusKestring(Status status) {
+        switch(status) {
+            case MENUNGGU: return "MENUNGGU";
+            case DITERIMA: return "DITERIMA";
+            case SELESAI: return "SELESAI";
+            case DIBATALKAN: return "DIBATALKAN";
+            default: return "TIDAK DIKETAHUI";
+        }
+    }
+    
+    string getTanggalHariIni() {
+        time_t sekarang = time(0);
+        tm* waktuLokal = localtime(&sekarang);
+        
+        char buffer[11];
+        strftime(buffer, sizeof(buffer), "%d-%m-%Y", waktuLokal);
+        return string(buffer);
+    }
+    
+    // fungsi untuk menambah janji temu baru
+    void daftarJanjiTemu(){
+        JanjiTemu* janjiBaru = new JanjiTemu;
+        
+        cout << "===================================================\n";
+        cout << "            PENDAFTARAN JANJI TEMU BARU\n";
+        cout << "===================================================\n";
+        
+        // menginput data hewan dan pemilik
+        cout << "DATA HEWAN DAN PEMILIK\n";
+        cout << " ID Hewan (unik): ";
+        cin.ignore();
+        getline(cin, janjiBaru->idHewan);
+        
+        if(cariJanjiByID(janjiBaru->idHewan) != NULL){
+            cout << "\n ID hewan sudah terdaftar! Gunakan ID yang berbeda.\n";
+            delete janjiBaru;
+            return;
+        }
+        
+        cout << " Nama Hewan: ";
+        getline(cin, janjiBaru->namaHewan);
+        
+        cout << " Jenis Hewan (Anjing/Kucing/Kelinci/Burung/Dll): ";
+        getline(cin, janjiBaru->jenisHewan);
+        
+        cout << " Nama Pemilik: ";
+        getline(cin, janjiBaru->pemilik);
+        
+        // pilih Dokter
+        cout << "\n PILIH DOKTER HEWAN\n";
+        cout << "  1. Dr. Andi Wijaya (Spesialis Bedah)\n";
+        cout << "  2. Dr. Budi Santoso (Spesialis Kulit & Alergi)\n";
+        cout << "  3. Dr. Citra Dewi (Spesialis Gigi & Mulut)\n";
+        cout << "  4. Dr. Dian Permata (Spesialis Umum & Vaksinasi)\n";
+        cout << "  5. Dr. Eko Pratama (Spesialis Mata & THT)\n";
+        cout << "  Pilihan (1-5): ";
+        
+        int pilihanDokter;
+        cin >> pilihanDokter;
+        
+        // validasi input
+        if(cin.fail()){
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            janjiBaru->dokter = "Dr. Dian Permata (Spesialis Umum & Vaksinasi)";
+        } else {
+            switch(pilihanDokter){
+                case 1: janjiBaru->dokter = "Dr. Andi Wijaya (Spesialis Bedah)";
+                break;
+                case 2: janjiBaru->dokter = "Dr. Budi Santoso (Spesialis Kulit & Alergi)";
+                break;
+                case 3: janjiBaru->dokter = "Dr. Citra Dewi (Spesialis Gigi & Mulut)";
+                break;
+                case 4: janjiBaru->dokter = "Dr. Dian Permata (Spesialis Umum & Vaksinasi)";
+                break;
+                case 5: janjiBaru->dokter = "Dr. Eko Pratama (Spesialis Mata & THT)";
+                break;
+                
+                default:
+                    cout << "Pilihan tidak valid! Dokter diatur ke default.\n";
+                    janjiBaru->dokter = "Dr. Dian Permata (Spesialis Umum & Vaksinasi)";
+            }
+        }
+        
+        // menginput tanggal dan waktu
+        cout << "\nTANGGAL DAN WAKTU\n";
+        cout << "Tanggal Janji (DD-MM-YYYY): ";
+        cin >> janjiBaru->tanggal;
+        
+        cout << "Waktu Janji (HH:MM): ";
+        cin >> janjiBaru->waktu;
+        
+        // menginput sebuah keluhan
+        cout << "\nKELUHAN\n";
+        cout << "Deskripsi Keluhan: ";
+        cin.ignore();
+        getline(cin, janjiBaru->keluhan);
+        
+        janjiBaru->status = MENUNGGU;
+        janjiBaru->next = NULL;
+        janjiBaru->prev = NULL;
+        
+        tambahJanjiTerurut(janjiBaru);
+        
+        totalJanji++;
+        cout << "\n=========================================================\n";
+        cout << "PENDAFTARAN BERHASIL! Total janji: " << totalJanji << endl;
+        cout << "=========================================================\n";
+        
+        cetakBuktiPendaftaran(janjiBaru);
+    }
+    
+    void tambahJanjiTerurut(JanjiTemu* janjiBaru){
+        // list kosong 
+        if(head == NULL){
+            head = janjiBaru;
+            tail = janjiBaru;
+            return;
+        }
+        
+        JanjiTemu* current = head;
+        
+        while (current != NULL){
+            // bandingkan tanggal dan waktu
+            if(current->tanggal > janjiBaru->tanggal || (current->tanggal == janjiBaru->tanggal && current->waktu > janjiBaru->waktu)){
+                if(current == head){
+                    janjiBaru->next = head;
+                    head->prev = janjiBaru;
+                    head = janjiBaru;
+                } else {
+                    janjiBaru->prev = current->prev;
+                    janjiBaru->next = current;
+                    current->prev->next = janjiBaru;
+                    current->prev = janjiBaru;
+                }
+                return;
+            }
+            current = current->next;
+        }
+        
+        tail->next = janjiBaru;
+        janjiBaru->prev = tail;
+        tail = janjiBaru;
+    }
+    
+    void cetakBuktiPendaftaran(JanjiTemu* janji){
+        cout << "\n=====================================================\n";
+        cout << "                PET COMPANY - BUKTI PENDAFTARAN\n";
+        cout << "=====================================================\n";
+        cout << left << setw(20) << "ID Hewan" << ": " << janji->idHewan << endl;
+        cout << left << setw(20) << "Nama Hewan" << ": " << janji->namaHewan << endl;
+        cout << left << setw(20) << "Jenis Hewan" << ": " << janji->jenisHewan << endl;
+        cout << left << setw(20) << "Pemilik" << ": " << janji->pemilik << endl;
+        cout << left << setw(20) << "Dokter" << ": " << janji->dokter << endl;
+        cout << left << setw(20) << "Tanggal" << ": " << janji->tanggal << endl;
+        cout << left << setw(20) << "Waktu" << ": " << janji->waktu << endl;
+        cout << left << setw(20) << "Keluhan" << ": " << janji->keluhan << endl;
+        cout << left << setw(20) << "Status" << ": " << statusKestring(janji->status) << endl;
+        
+        cout << "=====================================================\n";
+        cout << " *Tunjukan bukti ini saat datang ke klinik\n";
+        cout << " *Hubungi 1500-123 untuk informasi lebih lanjut*\n";
+        cout << "=====================================================\n";
+    }
+    
+    JanjiTemu* cariJanjiByID(string idHewan){
+        JanjiTemu* current = head;
+        
+        while(current != NULL){
+            if(current->idHewan == idHewan){
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+    
+    void perbaruiStatusJanji(){
+        if(head == NULL){
+            cout << "\nTidak ada janji temu yang terdaftar!\n";
+            return;
+        }
+        
+        string idHewan;
+        cout << "====================================================\n";
+        cout << "                PERBARUI STATUS JANJI TEMU\n";
+        cout << "====================================================\n";
+        cout << " Masukkan ID Hewan: ";
+        cin.ignore();
+        getline(cin, idHewan);
+        
+        JanjiTemu* janji = cariJanjiByID(idHewan);
+        
+        if(janji == NULL){
+            cout << "\nJanji temu dengan ID " << idHewan << " tidak ditemukan!\n";
+            return;
+        }
+        
+        cout << "\nDATA DITEMUKAN:\n";
+        cout << "  Nama Hewan : " << janji->namaHewan << endl;
+        cout << "  Pemilik    : " << janji->pemilik << endl;
+        cout << "  Dokter     : " << janji->dokter << endl;
+        cout << "  Tanggal    : " << janji->tanggal << endl;
+        cout << "  Waktu      : " << janji->waktu << endl;
+        cout << "  Status     : " << statusKestring(janji->status) << endl;
+        
+        cout << "\nPILIH STATUS BARU:\n";
+        cout << "  1. Menunggu\n";
+        cout << "  2. Diterima\n";
+        cout << "  3. Selesai\n";
+        cout << "  4. Dibatalkan\n";
+        cout << "  Pilihan (1-4): ";
+        
+        int pilihan;
+        cin >> pilihan;
+        
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "\n? Input tidak valid!\n";
+            return;
+        }
+        
+        // Update status
+        Status statusLama = janji->status;
+        
+        switch(pilihan){
+            case 1: janji->status = MENUNGGU;
+            break;
+            case 2: janji->status = DITERIMA;
+            break;
+            case 3: janji->status = SELESAI;
+            break;
+            case 4: janji->status = DIBATALKAN;
+            break;
+            default:
+                cout << "\nPilihan tidak valid!\n";
+                return;
+        }
+        
+        cout << "====================================================\n";
+        cout << "STATUS BERHASIL DIPERBARUI!\n";
+        cout << " Dari: " << statusKestring(statusLama) << endl;
+        cout << " Menjadi: " << statusKestring(janji->status) << endl;
+        cout << "====================================================\n";
+    }
+    
+    // fungsi menampilkan semua janji temu (dari depan)
+    void tampilkanSemuaJanji(){
+        if(head == NULL){
+            cout << "\nTidak ada janji temu yang terdaftar!\n";
+            return;
+        }
+        
+        cout << "\n====================================================\n";
+        cout << "            DAFTAR SEMUA JANJI TEMU (DARI DEPAN)\n";
+        cout << "====================================================\n";
+        
+        JanjiTemu* current = head;
+        int nomor = 1;
+        
+        while(current != NULL){
+            cout << "\n JANJI #" << nomor << ":\n";
+            cout << left << setw(15) << "  ID Hewan" << ": " << current->idHewan << endl;
+            cout << left << setw(15) << "  Nama Hewan" << ": " << current->namaHewan << endl;
+            cout << left << setw(15) << "  Dokter" << ": " << current->dokter << endl;
+            cout << left << setw(15) << "  Tanggal" << ": " << current->tanggal << endl;
+            cout << left << setw(15) << "  Waktu" << ": " << current->waktu << endl;
+            cout << left << setw(15) << "  Status" << ": " << statusKestring(current->status) << endl;
+            cout << "====================================================\n";
+            
+            current = current->next;
+            nomor++;
+        }
+        
+        cout << "\n TOTAL JANJI: " << totalJanji << endl;
+        cout << "====================================================\n";
+    }
+    
+    void tampilkanSemuaJanjiTerbalik(){
+        if(tail == NULL){
+            cout << "\nTidak ada janji temu yang terdaftar!\n";
+            return;
+        }
+        
+        cout << "\n====================================================\n";
+        cout << "            DAFTAR SEMUA JANJI TEMU (DARI BELAKANG)\n";
+        cout << "====================================================\n";
+        
+        JanjiTemu* current = tail;
+        int nomor = totalJanji;
+        
+        while(current != NULL){
+            cout << "\n JANJI #" << nomor << ":\n";
+            cout << left << setw(15) << "  ID Hewan" << ": " << current->idHewan << endl;
+            cout << left << setw(15) << "  Nama Hewan" << ": " << current->namaHewan << endl;
+            cout << left << setw(15) << "  Dokter" << ": " << current->dokter << endl;
+            cout << left << setw(15) << "  Tanggal" << ": " << current->tanggal << endl;
+            cout << left << setw(15) << "  Waktu" << ": " << current->waktu << endl;
+            cout << left << setw(15) << "  Status" << ": " << statusKestring(current->status) << endl;
+            cout << "====================================================\n";
+            
+            current = current->prev;
+            nomor--;
+        }
+        
+        cout << "\n TOTAL JANJI: " << totalJanji << endl;
+        cout << "====================================================\n";
+    }
+    
+    void cariDanTampilkanJanji() {
+        if(head == NULL){
+            cout << "\nTidak ada janji temu yang terdaftar!\n";
+            return;
+        }
+        
+        string idHewan;
+        cout << "\n====================================================\n";
+        cout << "                CARI JANJI TEMU\n";
+        cout << "====================================================\n";
+        cout << "Masukkan ID Hewan: ";
+        cin.ignore();
+        getline(cin, idHewan);
+        
+        JanjiTemu* janji = cariJanjiByID(idHewan);
+        
+        if(janji == NULL){
+            cout << "\nJanji temu dengan ID " << idHewan << " tidak ditemukan!\n";
+            return;
+        }
+        
+        cout << "\nDATA DITEMUKAN:\n";
+        cout << left << setw(20) << "  ID Hewan" << ": " << janji->idHewan << endl;
+        cout << left << setw(20) << "  Nama Hewan" << ": " << janji->namaHewan << endl;
+        cout << left << setw(20) << "  Jenis Hewan" << ": " << janji->jenisHewan << endl;
+        cout << left << setw(20) << "  Pemilik" << ": " << janji->pemilik << endl;
+        cout << left << setw(20) << "  Dokter" << ": " << janji->dokter << endl;
+        cout << left << setw(20) << "  Tanggal" << ": " << janji->tanggal << endl;
+        cout << left << setw(20) << "  Waktu" << ": " << janji->waktu << endl;
+        cout << left << setw(20) << "  Keluhan" << ": " << janji->keluhan << endl;
+        cout << left << setw(20) << "  Status" << ": " << statusKestring(janji->status) << endl;
+        cout << "====================================================\n";
+    }
+    
+    void hapusJanjiTemu(){
+        if(head == NULL){
+            cout << "\nTidak ada janji temu yang terdaftar!\n";
+            return;
+        }
+        
+        string idHewan;
+        cout << "\n====================================================\n";
+        cout << "                HAPUS JANJI TEMU\n";
+        cout << "====================================================\n";
+        cout << "Masukkan ID Hewan yang akan dihapus: ";
+        cin.ignore();
+        getline(cin, idHewan);
+        
+        JanjiTemu* current = cariJanjiByID(idHewan);
+        
+        if(current == NULL){
+            cout << "\nJanji temu dengan ID " << idHewan << " tidak ditemukan!\n";
+            return;
+        }
+        
+        cout << "\nDATA YANG AKAN DIHAPUS:\n";
+        cout << " ID Hewan     : " << current->idHewan << endl;
+        cout << " Nama Hewan   : " << current->namaHewan << endl;
+        cout << " Dokter       : " << current->dokter << endl;
+        cout << " Tanggal      : " << current->tanggal << endl;
+        cout << " Status       : " << statusKestring(current->status) << endl;
+        
+        cout << "\nAPAKAH ANDA YAKIN INGIN MENGHAPUS? (y/n): ";
+        char konfirmasi;
+        cin >> konfirmasi;
+        
+        if(konfirmasi != 'y' && konfirmasi != 'Y'){
+            cout << "\nPenghapusan dibatalkan.\n";
+            return;
+        }
+        
+        if(current->prev != NULL){
+            current->prev->next = current->next;
+        } else {
+            head = current->next;
+        }
+        
+        if(current->next != NULL){
+            current->next->prev = current->prev;
+        } else {
+            tail = current->prev;
+        }
+        
+        delete current;
+        totalJanji--;
+        
+        cout << "\n====================================================\n";
+        cout << "    JANJI TEMU BERHASIL DIHAPUS!\n";
+        cout << "    Total janji saat ini: " << totalJanji << endl;
+        cout << "====================================================\n";
+    }
+    
+    void tampilkanPengingat(){
+        if(head == NULL){
+            cout << "\nTidak ada janji temu yang terdaftar!\n";
+            return;
+        }
+        
+        string tanggalSekarang = getTanggalHariIni();
+        cout << "\n====================================================\n";
+        cout << "            PENGINGAT JANJI TEMU HARI INI\n";
+        cout << "====================================================\n";
+        
+        JanjiTemu* current = head;
+        bool ditemukan = false;
+        int count = 0;
+        
+        while (current != NULL){
+            if(current->tanggal == tanggalSekarang && 
+                current->status != DIBATALKAN && 
+                current->status != SELESAI) {
+                
+                ditemukan = true;
+                count++;
+                
+                cout << "\n JANJI #" << count << ":\n";
+                cout << left << setw(15) << "  ID Hewan" << ": " << current->idHewan << endl;
+                cout << left << setw(15) << "  Nama Hewan" << ": " << current->namaHewan << endl;
+                cout << left << setw(15) << "  Jenis Hewan" << ": " << current->jenisHewan << endl;
+                cout << left << setw(15) << "  Dokter" << ": " << current->dokter << endl;
+                cout << left << setw(15) << "  Waktu" << ": " << current->waktu << endl;
+                cout << left << setw(15) << "  Keluhan" << ": " << current->keluhan << endl;
+                cout << left << setw(15) << "  Status" << ": " << statusKestring(current->status) << endl;
+                cout << "   Silakan datang 15 menit lebih awal!\n";
+                cout << "====================================================\n";
+            }
+            current = current->next;
+        }
+        
+        if(!ditemukan){
+            cout << "\nTidak ada janji temu untuk hari ini (" << tanggalSekarang << ").\n";
+            cout << "Semua hewan peliharaan Anda sehat hari ini!\n";
+        } else {
+            cout << "TOTAL PENGINGAT: " << count << " janji temu\n";
+            cout << " Alamat: Jl. Kyi Haji Ahmad Dahlan No. 112, Kota Bantul\n";
+            cout << " Telepon: 1255-1244\n";
+        }
+        
+        cout << "====================================================\n";
+    }
+    
+    void tampilkanStatistik() {
+        if (head == NULL) {
+            cout << "\nTidak ada janji temu yang terdaftar!\n";
+            return;
+        }
+        
+        int menunggu = 0, diterima = 0, selesai = 0, dibatalkan = 0;
+        int anjing = 0, kucing = 0, kelinci = 0, burung = 0, lainnya = 0;
+        
+        JanjiTemu* current = head;
+        
+        while (current != NULL) {
+            // Hitung berdasarkan status
+            switch(current->status) {
+                case MENUNGGU: menunggu++; break;
+                case DITERIMA: diterima++; break;
+                case SELESAI: selesai++; break;
+                case DIBATALKAN: dibatalkan++; break;
+            }
+            
+            // Hitung berdasarkan jenis hewan
+            string jenis = current->jenisHewan;
+            // Konversi ke lowercase untuk perbandingan
+            for (size_t i = 0; i < jenis.length(); i++) {
+                jenis[i] = tolower(jenis[i]);
+            }
+            
+            if (jenis.find("anjing") != string::npos) anjing++;
+            else if (jenis.find("kucing") != string::npos) kucing++;
+            else if (jenis.find("kelinci") != string::npos) kelinci++;
+            else if (jenis.find("burung") != string::npos) burung++;
+            else lainnya++;
+            
+            current = current->next;
+        }
+        
+        cout << "\n====================================================\n";
+        cout << "              STATISTIK PET COMPANY\n";
+        cout << "====================================================\n";
+        cout << "\n STATUS JANJI TEMU:\n";
+        cout << left << setw(20) << "  Menunggu" << ": " << menunggu << endl;
+        cout << left << setw(20) << "  Diterima" << ": " << diterima << endl;
+        cout << left << setw(20) << "  Selesai" << ": " << selesai << endl;
+        cout << left << setw(20) << "  Dibatalkan" << ": " << dibatalkan << endl;
+        cout << left << setw(20) << "  TOTAL" << ": " << totalJanji << endl;
+        
+        cout << "\n JENIS HEWAN:\n";
+        cout << left << setw(20) << "  Anjing" << ": " << anjing << endl;
+        cout << left << setw(20) << "  Kucing" << ": " << kucing << endl;
+        cout << left << setw(20) << "  Kelinci" << ": " << kelinci << endl;
+        cout << left << setw(20) << "  Burung" << ": " << burung << endl;
+        cout << left << setw(20) << "  Lainnya" << ": " << lainnya << endl;
+        
+        cout << "\n====================================================\n";
+    }
+    
+    // Fungsi untuk membersihkan semua janji
+    void bersihkanSemuaJanji() {
+        JanjiTemu* current = head;
+        
+        while (current != NULL) {
+            JanjiTemu* next = current->next;
+            delete current;
+            current = next;
+        }
+        
+        head = NULL;
+        tail = NULL;
+        totalJanji = 0;
+    }
+    
+    // Getter untuk total janji
+    int getTotalJanji() {
+        return totalJanji;
+    }
+    
+    void tampilkanMenu() {
+        cout << "\n=======================================================\n";
+        cout << "            PET COMPANY - SISTEM JANJI TEMU\n";
+        cout << "                    (Doubly Linked List)\n";
+        cout << "=======================================================\n";
+        cout << "  1. Daftar Janji Temu Baru\n";
+        cout << "  2. Perbarui Status Janji\n";
+        cout << "  3. Tampilkan Semua Janji (dari depan)\n";
+        cout << "  4. Tampilkan Semua Janji (dari belakang)\n";
+        cout << "  5. Cari Janji Temu\n";
+        cout << "  6. Hapus Janji Temu\n";
+        cout << "  7. Pengingat Janji Hari Ini\n";
+        cout << "  8. Tampilkan Statistik\n";
+        cout << "  9. Keluar\n";
+        cout << "=======================================================\n";
+        cout << "  Pilihan Anda (1-9): ";
+    }
+};
+
+// Fungsi utama
+int main() {
+    petCompanyJanjiTemu sistem;
+    int pilihan;
+    
+    cout << "=========================================================\n";
+    cout << "     SELAMAT DATANG DI PET COMPANY\n";
+    cout << "     Kesehatan Hewan Peliharaan Anda Prioritas Kami\n";
+    cout << "=========================================================\n";
+    
+    do {
+        sistem.tampilkanMenu();
+        cin >> pilihan;
+        
+        // Validasi input
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "\nInput tidak valid! Masukkan angka 1-9.\n";
+            continue;
+        }
+        
+        switch(pilihan) {
+            case 1:
+                sistem.daftarJanjiTemu();
+                break;
+            case 2:
+                sistem.perbaruiStatusJanji();
+                break;
+            case 3:
+                sistem.tampilkanSemuaJanji();
+                break;
+            case 4:
+                sistem.tampilkanSemuaJanjiTerbalik();
+                break;
+            case 5:
+                sistem.cariDanTampilkanJanji();
+                break;
+            case 6:
+                sistem.hapusJanjiTemu();
+                break;
+            case 7:
+                sistem.tampilkanPengingat();
+                break;
+            case 8:
+                sistem.tampilkanStatistik();
+                break;
+            case 9:
+                cout << "\n============================================================\n";
+                cout << "    Terima kasih telah menggunakan sistem Pet Company!\n";
+                cout << "         Semoga hewan peliharaan sehat selalu!\n";
+                cout << "============================================================\n";
+                break;
+            default:
+                cout << "\nPilihan tidak valid! Masukkan angka 1-9.\n";
+                break;
+        }
+        
+        // Tunggu user menekan enter untuk melanjutkan
+        if (pilihan != 9) {
+            cout << "\nTekan Enter untuk melanjutkan...";
+            cin.ignore();
+            cin.get();
+        }
+        
+    } while (pilihan != 9);
+    
+    return 0;
+}
+
+#include <iostream>
+#include <string>
+#include <limits>
+#include <ctime>
+#include <iomanip>
+#include <cctype>
+
+using namespace std;
+
+enum Status { MENUNGGU, DITERIMA, SELESAI, DIBATALKAN };
+
+struct JanjiTemu {
+    string idHewan;
+    string namaHewan;
+    string jenisHewan;
+    string pemilik;
+    string dokter;
+    string tanggal;
+    string waktu;
+    string keluhan;
+    Status status;
+    JanjiTemu* next;
+    JanjiTemu* prev;
+};
+
+struct RekamMedis {
+    string idHewan;
+    string tanggal;
+    string diagnosis;
+    string obat;
+    string saran;
+    string jenisCatatan; 
+    RekamMedis* next;
+    RekamMedis* prev;
+};
+
+// Class untuk manajemen janji temu
+class PetCompanyJanjiTemu {
+private:
+    JanjiTemu* headJanji;
+    JanjiTemu* tailJanji;
+    int totalJanji;
+    
+public:
+    PetCompanyJanjiTemu(){
+        headJanji = NULL;
+        tailJanji = NULL;
+        totalJanji = 0;
+    }
+    
+    ~PetCompanyJanjiTemu(){
+        bersihkanSemuaJanji();
+    }
+    
+    JanjiTemu* getHeadJanji() { return headJanji; }
+    
+    string statusKestring(Status status) {
+        switch(status) {
+            case MENUNGGU: return "MENUNGGU";
+            case DITERIMA: return "DITERIMA";
+            case SELESAI: return "SELESAI";
+            case DIBATALKAN: return "DIBATALKAN";
+            default: return "TIDAK DIKETAHUI";
+        }
+    }
+    
+    JanjiTemu* cariJanjiByID(string idHewan){
+        JanjiTemu* current = headJanji;
+        while(current != NULL){
+            if(current->idHewan == idHewan){
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+    
+    void bersihkanSemuaJanji() {
+        JanjiTemu* current = headJanji;
+        while (current != NULL) {
+            JanjiTemu* next = current->next;
+            delete current;
+            current = next;
+        }
+        headJanji = NULL;
+        tailJanji = NULL;
+        totalJanji = 0;
+    }
+};
+
+// Class untuk manajemen rekam medis
+class RekamMedisManager {
+private:
+    RekamMedis* headRekam;
+    RekamMedis* tailRekam;
+    int totalRekam;
+    
+public:
+    RekamMedisManager(){
+        headRekam = NULL;
+        tailRekam = NULL;
+        totalRekam = 0;
+    }
+    
+    ~RekamMedisManager(){
+        bersihkanSemuaRekam();
+    }
+    
+    void tambahRekamMedis(JanjiTemu* janji = NULL) {
+        RekamMedis* rekamBaru = new RekamMedis;
+        
+        cout << "\n====================================================\n";
+        cout << "               TAMBAH REKAM MEDIS BARU\n";
+        cout << "====================================================\n";
+        
+        string idHewanInput;
+        
+        if (janji != NULL) {
+            idHewanInput = janji->idHewan;
+            cout << "ID Hewan (dari janji temu): " << idHewanInput << endl;
+        } else {
+            cout << "ID Hewan: ";
+            cin.ignore();
+            getline(cin, idHewanInput);
+        }
+        
+        rekamBaru->idHewan = idHewanInput;
+        
+        cout << "\nJENIS CATATAN:\n";
+        cout << "  1. Pemeriksaan Kesehatan\n";
+        cout << "  2. Vaksinasi\n";
+        cout << "  3. Perawatan Rutin\n";
+        cout << "  Pilihan (1-3): ";
+        
+        int pilihanJenis;
+        cin >> pilihanJenis;
+        cin.ignore();
+        
+        switch(pilihanJenis) {
+            case 1: rekamBaru->jenisCatatan = "Pemeriksaan Kesehatan"; break;
+            case 2: rekamBaru->jenisCatatan = "Vaksinasi"; break;
+            case 3: rekamBaru->jenisCatatan = "Perawatan Rutin"; break;
+            default: rekamBaru->jenisCatatan = "Pemeriksaan Kesehatan";
+        }
+        
+        cout << "\nTanggal Pemeriksaan (DD-MM-YYYY): ";
+        getline(cin, rekamBaru->tanggal);
+        
+        cout << "Diagnosis: ";
+        getline(cin, rekamBaru->diagnosis);
+        
+        cout << "Obat yang diresepkan: ";
+        getline(cin, rekamBaru->obat);
+       
+        cout << "Saran dan perawatan: ";
+        getline(cin, rekamBaru->saran);
+        
+        rekamBaru->next = NULL;
+        rekamBaru->prev = NULL;
+        
+        if (headRekam == NULL) {
+            headRekam = rekamBaru;
+            tailRekam = rekamBaru;
+        } else {
+            tailRekam->next = rekamBaru;
+            rekamBaru->prev = tailRekam;
+            tailRekam = rekamBaru;
+        }
+        
+        totalRekam++;
+        
+        cout << "\n====================================================\n";
+        cout << "      REKAM MEDIS BERHASIL DITAMBAHKAN!\n";
+        cout << "      Total rekam medis: " << totalRekam << endl;
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk mencari rekam medis berdasarkan ID hewan
+    void cariRekamMedisByID(string idHewan) {
+        if (headRekam == NULL) {
+            cout << "\nTidak ada rekam medis yang tersimpan!\n";
+            return;
+        }
+        
+        RekamMedis* current = headRekam;
+        bool ditemukan = false;
+        int count = 0;
+        
+        cout << "\n====================================================\n";
+        cout << "      RIWAYAT REKAM MEDIS - ID: " << idHewan << "\n";
+        cout << "====================================================\n";
+        
+        while (current != NULL) {
+            if (current->idHewan == idHewan) {
+                ditemukan = true;
+                count++;
+                
+                cout << "\nREKAM #" << count << ":\n";
+                cout << left << setw(20) << "  Jenis Catatan" << ": " << current->jenisCatatan << endl;
+                cout << left << setw(20) << "  Tanggal" << ": " << current->tanggal << endl;
+                cout << left << setw(20) << "  Diagnosis" << ": " << current->diagnosis << endl;
+                cout << left << setw(20) << "  Obat" << ": " << current->obat << endl;
+                cout << left << setw(20) << "  Saran" << ": " << current->saran << endl;
+                cout << "  ---------------------------------------------\n";
+            }
+            current = current->next;
+        }
+        
+        if (!ditemukan) {
+            cout << "\nTidak ditemukan rekam medis untuk hewan dengan ID: " << idHewan << endl;
+        } else {
+            cout << "\nTOTAL REKAM DITEMUKAN: " << count << endl;
+        }
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk menampilkan semua rekam medis (dari depan)
+    void tampilkanSemuaRekamMedis() {
+        if (headRekam == NULL) {
+            cout << "\nTidak ada rekam medis yang tersimpan!\n";
+            return;
+        }
+        
+        RekamMedis* current = headRekam;
+        int nomor = 1;
+        
+        cout << "\n====================================================\n";
+        cout << "           DAFTAR SEMUA REKAM MEDIS\n";
+        cout << "====================================================\n";
+        
+        while (current != NULL) {
+            cout << "\nREKAM #" << nomor << ":\n";
+            cout << left << setw(20) << "  ID Hewan" << ": " << current->idHewan << endl;
+            cout << left << setw(20) << "  Jenis Catatan" << ": " << current->jenisCatatan << endl;
+            cout << left << setw(20) << "  Tanggal" << ": " << current->tanggal << endl;
+            cout << left << setw(20) << "  Diagnosis" << ": " << current->diagnosis << endl;
+            cout << left << setw(20) << "  Obat" << ": " << current->obat << endl;
+            cout << left << setw(20) << "  Saran" << ": " << current->saran << endl;
+            cout << "====================================================\n";
+            
+            current = current->next;
+            nomor++;
+        }
+        
+        cout << "\nTOTAL REKAM MEDIS: " << totalRekam << endl;
+        cout << "====================================================\n";
+    }
+    
+    void tampilkanRekamMedisTerbalik() {
+        if (tailRekam == NULL) {
+            cout << "\nTidak ada rekam medis yang tersimpan!\n";
+            return;
+        }
+        
+        RekamMedis* current = tailRekam;
+        int nomor = totalRekam;
+        
+        cout << "\n====================================================\n";
+        cout << "     DAFTAR REKAM MEDIS (TERBARU KE TERLAMA)\n";
+        cout << "====================================================\n";
+        
+        while (current != NULL) {
+            cout << "\nREKAM #" << nomor << ":\n";
+            cout << left << setw(20) << "  ID Hewan" << ": " << current->idHewan << endl;
+            cout << left << setw(20) << "  Jenis Catatan" << ": " << current->jenisCatatan << endl;
+            cout << left << setw(20) << "  Tanggal" << ": " << current->tanggal << endl;
+            cout << left << setw(20) << "  Diagnosis" << ": " << current->diagnosis << endl;
+            cout << left << setw(20) << "  Obat" << ": " << current->obat << endl;
+            cout << left << setw(20) << "  Saran" << ": " << current->saran << endl;
+            cout << "====================================================\n";
+            
+            current = current->prev;
+            nomor--;
+        }
+        
+        cout << "\nTOTAL REKAM MEDIS: " << totalRekam << endl;
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk menghapus rekam medis
+    void hapusRekamMedis() {
+        if (headRekam == NULL) {
+            cout << "\nTidak ada rekam medis yang tersimpan!\n";
+            return;
+        }
+        
+        string idHewan;
+        string tanggal;
+        
+        cout << "\n====================================================\n";
+        cout << "               HAPUS REKAM MEDIS\n";
+        cout << "====================================================\n";
+        cout << "ID Hewan: ";
+        cin.ignore();
+        getline(cin, idHewan);
+        cout << "Tanggal Rekam Medis (DD-MM-YYYY): ";
+        getline(cin, tanggal);
+        
+        RekamMedis* current = headRekam;
+        bool ditemukan = false;
+        
+        while (current != NULL) {
+            if (current->idHewan == idHewan && current->tanggal == tanggal) {
+                ditemukan = true;
+                
+                cout << "\nDATA YANG AKAN DIHAPUS:\n";
+                cout << left << setw(20) << "  ID Hewan" << ": " << current->idHewan << endl;
+                cout << left << setw(20) << "  Jenis Catatan" << ": " << current->jenisCatatan << endl;
+                cout << left << setw(20) << "  Tanggal" << ": " << current->tanggal << endl;
+                cout << left << setw(20) << "  Diagnosis" << ": " << current->diagnosis << endl;
+                
+                cout << "\nAPAKAH ANDA YAKIN INGIN MENGHAPUS? (y/n): ";
+                char konfirmasi;
+                cin >> konfirmasi;
+                
+                if (konfirmasi == 'y' || konfirmasi == 'Y') {
+                    // Hapus node dari linked list
+                    if (current->prev != NULL) {
+                        current->prev->next = current->next;
+                    } else {
+                        headRekam = current->next;
+                    }
+                    
+                    if (current->next != NULL) {
+                        current->next->prev = current->prev;
+                    } else {
+                        tailRekam = current->prev;
+                    }
+                    
+                    delete current;
+                    totalRekam--;
+                    
+                    cout << "\nREKAM MEDIS BERHASIL DIHAPUS!\n";
+                    cout << "Total rekam medis saat ini: " << totalRekam << endl;
+                } else {
+                    cout << "\nPenghapusan dibatalkan.\n";
+                }
+                break;
+            }
+            current = current->next;
+        }
+        
+        if (!ditemukan) {
+            cout << "\nRekam medis tidak ditemukan!\n";
+        }
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk membersihkan semua rekam medis
+    void bersihkanSemuaRekam() {
+        RekamMedis* current = headRekam;
+        while (current != NULL) {
+            RekamMedis* next = current->next;
+            delete current;
+            current = next;
+        }
+        headRekam = NULL;
+        tailRekam = NULL;
+        totalRekam = 0;
+    }
+    
+    // Fungsi untuk menambah catatan vaksin khusus
+    void tambahCatatanVaksin() {
+        RekamMedis* rekamBaru = new RekamMedis;
+        
+        cout << "\n====================================================\n";
+        cout << "               CATATAN VAKSINASI\n";
+        cout << "====================================================\n";
+        
+        cout << "ID Hewan: ";
+        cin.ignore();
+        getline(cin, rekamBaru->idHewan);
+        
+        rekamBaru->jenisCatatan = "Vaksinasi";
+        
+        cout << "Tanggal Vaksinasi (DD-MM-YYYY): ";
+        getline(cin, rekamBaru->tanggal);
+        
+        cout << "Jenis Vaksin: ";
+        getline(cin, rekamBaru->diagnosis); // Gunakan diagnosis field untuk jenis vaksin
+        
+        cout << "Dosis: ";
+        getline(cin, rekamBaru->obat); // Gunakan obat field untuk dosis
+        
+        cout << "Catatan Tambahan: ";
+        getline(cin, rekamBaru->saran);
+        
+        // Tambahkan ke linked list
+        rekamBaru->next = NULL;
+        rekamBaru->prev = NULL;
+        
+        if (headRekam == NULL) {
+            headRekam = rekamBaru;
+            tailRekam = rekamBaru;
+        } else {
+            tailRekam->next = rekamBaru;
+            rekamBaru->prev = tailRekam;
+            tailRekam = rekamBaru;
+        }
+        
+        totalRekam++;
+        
+        cout << "\n====================================================\n";
+        cout << "      CATATAN VAKSINASI BERHASIL DITAMBAHKAN!\n";
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk menambah catatan perawatan rutin
+    void tambahCatatanPerawatanRutin() {
+        RekamMedis* rekamBaru = new RekamMedis;
+        
+        cout << "\n====================================================\n";
+        cout << "           CATATAN PERAWATAN RUTIN\n";
+        cout << "====================================================\n";
+        
+        cout << "ID Hewan: ";
+        cin.ignore();
+        getline(cin, rekamBaru->idHewan);
+        
+        rekamBaru->jenisCatatan = "Perawatan Rutin";
+        
+        cout << "Tanggal Perawatan (DD-MM-YYYY): ";
+        getline(cin, rekamBaru->tanggal);
+        
+        cout << "Jenis Perawatan (Grooming/Pembersihan Telinga/dll): ";
+        getline(cin, rekamBaru->diagnosis);
+        
+        cout << "Produk yang Digunakan: ";
+        getline(cin, rekamBaru->obat);
+        
+        cout << "Catatan dan Saran: ";
+        getline(cin, rekamBaru->saran);
+        
+        // Tambahkan ke linked list
+        rekamBaru->next = NULL;
+        rekamBaru->prev = NULL;
+        
+        if (headRekam == NULL) {
+            headRekam = rekamBaru;
+            tailRekam = rekamBaru;
+        } else {
+            tailRekam->next = rekamBaru;
+            rekamBaru->prev = tailRekam;
+            tailRekam = rekamBaru;
+        }
+        
+        totalRekam++;
+        
+        cout << "\n====================================================\n";
+        cout << "   CATATAN PERAWATAN RUTIN BERHASIL DITAMBAHKAN!\n";
+        cout << "====================================================\n";
+    }
+    
+    // Getter untuk total rekam medis
+    int getTotalRekam() {
+        return totalRekam;
+    }
+};
+
+// Fungsi untuk menampilkan menu utama
+void tampilkanMenuUtama() {
+    cout << "\n=======================================================\n";
+    cout << "            PET COMPANY - SISTEM TERPADU\n";
+    cout << "           (Janji Temu & Rekam Medis Hewan)\n";
+    cout << "=======================================================\n";
+    cout << "  1. Kelola Janji Temu\n";
+    cout << "  2. Kelola Rekam Medis\n";
+    cout << "  3. Keluar\n";
+    cout << "=======================================================\n";
+    cout << "  Pilihan Anda (1-3): ";
+}
+
+// Fungsi untuk menampilkan menu janji temu
+void tampilkanMenuJanjiTemu() {
+    cout << "\n=======================================================\n";
+    cout << "            SISTEM JANJI TEMU HEWAN\n";
+    cout << "=======================================================\n";
+    cout << "  1. Daftar Janji Temu Baru\n";
+    cout << "  2. Perbarui Status Janji\n";
+    cout << "  3. Tampilkan Semua Janji (dari depan)\n";
+    cout << "  4. Tampilkan Semua Janji (dari belakang)\n";
+    cout << "  5. Cari Janji Temu\n";
+    cout << "  6. Hapus Janji Temu\n";
+    cout << "  7. Pengingat Janji Hari Ini\n";
+    cout << "  8. Tampilkan Statistik\n";
+    cout << "  9. Kembali ke Menu Utama\n";
+    cout << "=======================================================\n";
+    cout << "  Pilihan Anda (1-9): ";
+}
+
+// Fungsi untuk menampilkan menu rekam medis
+void tampilkanMenuRekamMedis() {
+    cout << "\n=======================================================\n";
+    cout << "            SISTEM REKAM MEDIS HEWAN\n";
+    cout << "=======================================================\n";
+    cout << "  1. Tambah Rekam Medis Baru\n";
+    cout << "  2. Cari Rekam Medis Berdasarkan ID Hewan\n";
+    cout << "  3. Tampilkan Semua Rekam Medis\n";
+    cout << "  4. Tampilkan Rekam Medis (Terbaru ke Terlama)\n";
+    cout << "  5. Tambah Catatan Vaksinasi\n";
+    cout << "  6. Tambah Catatan Perawatan Rutin\n";
+    cout << "  7. Hapus Rekam Medis\n";
+    cout << "  8. Kembali ke Menu Utama\n";
+    cout << "=======================================================\n";
+    cout << "  Pilihan Anda (1-8): ";
+}
+
+// Fungsi utama
+int main() {
+    PetCompanyJanjiTemu sistemJanji;
+    RekamMedisManager sistemRekam;
+    int pilihanUtama, pilihanSub;
+    
+    cout << "=========================================================\n";
+    cout << "     SELAMAT DATANG DI PET COMPANY\n";
+    cout << "     Kesehatan Hewan Peliharaan Anda Prioritas Kami\n";
+    cout << "=========================================================\n";
+    
+    do {
+        tampilkanMenuUtama();
+        cin >> pilihanUtama;
+        
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "\nInput tidak valid! Masukkan angka 1-3.\n";
+            continue;
+        }
+        
+        switch(pilihanUtama) {
+            case 1: // Menu Janji Temu
+                do {
+                    tampilkanMenuJanjiTemu();
+                    cin >> pilihanSub;
+                    
+                    if (cin.fail()) {
+                        cin.clear();
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        cout << "\nInput tidak valid!\n";
+                        continue;
+                    }
+                    
+                    // Di sini Anda perlu menambahkan implementasi fungsi-fungsi
+                    // untuk sistem janji temu yang sudah ada sebelumnya
+                    // Karena kode sudah panjang, saya berasumsi Anda sudah punya
+                    // implementasi lengkap untuk fungsi-fungsi janji temu
+                    
+                    switch(pilihanSub) {
+                        case 1:
+                            cout << "\nFitur Daftar Janji Temu Baru\n";
+                            // sistemJanji.daftarJanjiTemu();
+                            break;
+                        case 2:
+                            cout << "\nFitur Perbarui Status Janji\n";
+                            // sistemJanji.perbaruiStatusJanji();
+                            break;
+                        case 3:
+                            cout << "\nFitur Tampilkan Semua Janji (dari depan)\n";
+                            // sistemJanji.tampilkanSemuaJanji();
+                            break;
+                        case 4:
+                            cout << "\nFitur Tampilkan Semua Janji (dari belakang)\n";
+                            // sistemJanji.tampilkanSemuaJanjiTerbalik();
+                            break;
+                        case 5:
+                            cout << "\nFitur Cari Janji Temu\n";
+                            // sistemJanji.cariDanTampilkanJanji();
+                            break;
+                        case 6:
+                            cout << "\nFitur Hapus Janji Temu\n";
+                            // sistemJanji.hapusJanjiTemu();
+                            break;
+                        case 7:
+                            cout << "\nFitur Pengingat Janji Hari Ini\n";
+                            // sistemJanji.tampilkanPengingat();
+                            break;
+                        case 8:
+                            cout << "\nFitur Tampilkan Statistik\n";
+                            // sistemJanji.tampilkanStatistik();
+                            break;
+                        case 9:
+                            cout << "\nKembali ke Menu Utama...\n";
+                            break;
+                        default:
+                            cout << "\nPilihan tidak valid! Masukkan angka 1-9.\n";
+                    }
+                    
+                    if (pilihanSub != 9) {
+                        cout << "\nTekan Enter untuk melanjutkan...";
+                        cin.ignore();
+                        cin.get();
+                    }
+                    
+                } while (pilihanSub != 9);
+                break;
+                
+            case 2: // Menu Rekam Medis
+                do {
+                    tampilkanMenuRekamMedis();
+                    cin >> pilihanSub;
+                    
+                    if (cin.fail()) {
+                        cin.clear();
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        cout << "\nInput tidak valid!\n";
+                        continue;
+                    }
+                    
+                    switch(pilihanSub) {
+                        case 1: // Tambah Rekam Medis Baru
+                            {
+                                string idHewan;
+                                cout << "\nApakah ini lanjutan dari janji temu? (y/n): ";
+                                char pilihan;
+                                cin >> pilihan;
+                                
+                                if (pilihan == 'y' || pilihan == 'Y') {
+                                    cout << "Masukkan ID Hewan dari janji temu: ";
+                                    cin.ignore();
+                                    getline(cin, idHewan);
+                                    
+                                    // Cari janji temu berdasarkan ID
+                                    JanjiTemu* janji = sistemJanji.cariJanjiByID(idHewan);
+                                    if (janji != NULL) {
+                                        sistemRekam.tambahRekamMedis(janji);
+                                    } else {
+                                        cout << "\nJanji temu tidak ditemukan. Tambah rekam medis secara manual.\n";
+                                        sistemRekam.tambahRekamMedis();
+                                    }
+                                } else {
+                                    sistemRekam.tambahRekamMedis();
+                                }
+                            }
+                            break;
+                            
+                        case 2: // Cari Rekam Medis Berdasarkan ID Hewan
+                            {
+                                string idHewan;
+                                cout << "\nMasukkan ID Hewan: ";
+                                cin.ignore();
+                                getline(cin, idHewan);
+                                sistemRekam.cariRekamMedisByID(idHewan);
+                            }
+                            break;
+                            
+                        case 3: // Tampilkan Semua Rekam Medis
+                            sistemRekam.tampilkanSemuaRekamMedis();
+                            break;
+                            
+                        case 4: // Tampilkan Rekam Medis (Terbaru ke Terlama)
+                            sistemRekam.tampilkanRekamMedisTerbalik();
+                            break;
+                            
+                        case 5: // Tambah Catatan Vaksinasi
+                            sistemRekam.tambahCatatanVaksin();
+                            break;
+                            
+                        case 6: // Tambah Catatan Perawatan Rutin
+                            sistemRekam.tambahCatatanPerawatanRutin();
+                            break;
+                            
+                        case 7: // Hapus Rekam Medis
+                            sistemRekam.hapusRekamMedis();
+                            break;
+                            
+                        case 8: // Kembali ke Menu Utama
+                            cout << "\nKembali ke Menu Utama...\n";
+                            break;
+                            
+                        default:
+                            cout << "\nPilihan tidak valid! Masukkan angka 1-8.\n";
+                    }
+                    
+                    if (pilihanSub != 8) {
+                        cout << "\nTekan Enter untuk melanjutkan...";
+                        cin.ignore();
+                        cin.get();
+                    }
+                    
+                } while (pilihanSub != 8);
+                break;
+                
+            case 3: // Keluar
+                cout << "\n============================================================\n";
+                cout << "    Terima kasih telah menggunakan sistem Pet Company!\n";
+                cout << "         Semoga hewan peliharaan sehat selalu!\n";
+                cout << "============================================================\n";
+                break;
+                
+            default:
+                cout << "\nPilihan tidak valid! Masukkan angka 1-3.\n";
+        }
+        
+        if (pilihanUtama != 3) {
+            cout << "\nTekan Enter untuk melanjutkan...";
+            cin.ignore();
+            cin.get();
+        }
+        
+    } while (pilihanUtama != 3);
+    
+    return 0;
+}
+#include <iostream>
+#include <string>
+#include <limits>
+#include <ctime>
+#include <iomanip>
+#include <cctype>
+#include <sstream>
+#include <cstdlib>
+
+using namespace std;
+
+// Struct untuk item dalam transaksi doubly linked list
+struct ItemTransaksi {
+    string namaItem;
+    int jumlah;
+    double harga;
+    double subtotal;
+    ItemTransaksi* next;
+    ItemTransaksi* prev;
+};
+
+// Struct untuk transaksi doubly linked list
+struct Transaksi {
+    string idTransaksi;
+    string idHewan;
+    string namaHewan;
+    string pemilik;
+    string tanggal;
+    string waktu;
+    string metodePembayaran;
+    string statusPembayaran;
+    double totalBiaya;
+    double pembayaranDiterima;
+    double kembalian;
+    ItemTransaksi* itemHead;
+    ItemTransaksi* itemTail;
+    int jumlahItem;
+    Transaksi* next;
+    Transaksi* prev;
+};
+
+// Class untuk manajemen transaksi doubly linked list
+class TransaksiManager {
+private:
+    Transaksi* headTransaksi;
+    Transaksi* tailTransaksi;
+    int totalTransaksi;
+    int counterID;
+    
+    // Fungsi untuk generate ID transaksi
+    string generateID() {
+        time_t sekarang = time(0);
+        tm* waktuLokal = localtime(&sekarang);
+        
+        char buffer[20];
+        strftime(buffer, sizeof(buffer), "%Y%m%d", waktuLokal);
+        string tanggal = buffer;
+        
+        stringstream ss;
+        ss << "TRX" << tanggal << "-" << setw(4) << setfill('0') << counterID;
+        counterID++;
+        return ss.str();
+    }
+    
+    // Fungsi untuk mendapatkan tanggal sekarang
+    string getTanggalSekarang() {
+        time_t sekarang = time(0);
+        tm* waktuLokal = localtime(&sekarang);
+        
+        char buffer[11];
+        strftime(buffer, sizeof(buffer), "%d-%m-%Y", waktuLokal);
+        return string(buffer);
+    }
+    
+    // Fungsi untuk mendapatkan waktu sekarang
+    string getWaktuSekarang() {
+        time_t sekarang = time(0);
+        tm* waktuLokal = localtime(&sekarang);
+        
+        char buffer[9];
+        strftime(buffer, sizeof(buffer), "%H:%M:%S", waktuLokal);
+        return string(buffer);
+    }
+    
+    // Fungsi untuk menghapus semua item dalam transaksi
+    void hapusItemTransaksi(ItemTransaksi* head) {
+        ItemTransaksi* current = head;
+        while (current != NULL) {
+            ItemTransaksi* next = current->next;
+            delete current;
+            current = next;
+        }
+    }
+    
+public:
+    TransaksiManager() {
+        headTransaksi = NULL;
+        tailTransaksi = NULL;
+        totalTransaksi = 0;
+        counterID = 1;
+    }
+    
+    ~TransaksiManager() {
+        bersihkanSemuaTransaksi();
+    }
+    
+    // Fungsi untuk membuat transaksi baru
+    void buatTransaksiBaru() {
+        Transaksi* transaksiBaru = new Transaksi;
+        
+        cout << "\n====================================================\n";
+        cout << "              TRANSAKSI BARU - PET COMPANY\n";
+        cout << "====================================================\n";
+        
+        // Generate ID transaksi
+        transaksiBaru->idTransaksi = generateID();
+        cout << "ID Transaksi: " << transaksiBaru->idTransaksi << endl;
+        
+        // Input data hewan dan pemilik
+        cout << "\nDATA HEWAN DAN PEMILIK:\n";
+        cout << "ID Hewan: ";
+        cin.ignore();
+        getline(cin, transaksiBaru->idHewan);
+        
+        cout << "Nama Hewan: ";
+        getline(cin, transaksiBaru->namaHewan);
+        
+        cout << "Nama Pemilik: ";
+        getline(cin, transaksiBaru->pemilik);
+        
+        // Set tanggal dan waktu
+        transaksiBaru->tanggal = getTanggalSekarang();
+        transaksiBaru->waktu = getWaktuSekarang();
+        
+        // Inisialisasi item transaksi
+        transaksiBaru->itemHead = NULL;
+        transaksiBaru->itemTail = NULL;
+        transaksiBaru->jumlahItem = 0;
+        transaksiBaru->totalBiaya = 0.0;
+        
+        // Tambahkan item-item transaksi
+        char tambahLagi = 'y';
+        do {
+            tambahItemKeTransaksi(transaksiBaru);
+            
+            cout << "\n----------------------------------------------------\n";
+            cout << "TOTAL SEMENTARA: Rp " << fixed << setprecision(0) << transaksiBaru->totalBiaya << endl;
+            cout << "----------------------------------------------------\n";
+            
+            cout << "\nTambah item lain? (y/n): ";
+            cin >> tambahLagi;
+            cin.ignore();
+            
+        } while (tambahLagi == 'y' || tambahLagi == 'Y');
+        
+        // Proses pembayaran
+        prosesPembayaran(transaksiBaru);
+        
+        // Tambahkan ke linked list transaksi
+        transaksiBaru->next = NULL;
+        transaksiBaru->prev = NULL;
+        
+        if (headTransaksi == NULL) {
+            headTransaksi = transaksiBaru;
+            tailTransaksi = transaksiBaru;
+        } else {
+            tailTransaksi->next = transaksiBaru;
+            transaksiBaru->prev = tailTransaksi;
+            tailTransaksi = transaksiBaru;
+        }
+        
+        totalTransaksi++;
+        
+        // Cetak struk
+        cetakStrukPembayaran(transaksiBaru);
+        
+        cout << "\n====================================================\n";
+        cout << "      TRANSAKSI BERHASIL DIBUAT DAN DISIMPAN!\n";
+        cout << "      Total transaksi: " << totalTransaksi << endl;
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk menambahkan item ke transaksi
+    void tambahItemKeTransaksi(Transaksi* transaksi) {
+        ItemTransaksi* itemBaru = new ItemTransaksi;
+        
+        cout << "\nTAMBAH ITEM TRANSAKSI:\n";
+        
+        // Pilih jenis layanan/produk
+        cout << "PILIH JENIS LAYANAN/PRODUK:\n";
+        cout << "  1. Pemeriksaan Umum (Rp 150.000)\n";
+        cout << "  2. Pemeriksaan Spesialis (Rp 300.000)\n";
+        cout << "  3. Vaksinasi Dasar (Rp 200.000)\n";
+        cout << "  4. Vaksinasi Premium (Rp 350.000)\n";
+        cout << "  5. Grooming Basic (Rp 100.000)\n";
+        cout << "  6. Grooming Premium (Rp 250.000)\n";
+        cout << "  7. Obat Antibiotik (Rp 75.000)\n";
+        cout << "  8. Obat Vitamin (Rp 50.000)\n";
+        cout << "  9. Obat Anti Nyeri (Rp 65.000)\n";
+        cout << "  10. Rawat Inap (Rp 500.000/hari)\n";
+        cout << "  11. Operasi (Rp 2.500.000)\n";
+        cout << "  12. Lainnya (Input manual)\n";
+        cout << "  Pilihan (1-12): ";
+        
+        int pilihan;
+        cin >> pilihan;
+        
+        if (cin.fail() || pilihan < 1 || pilihan > 12) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            pilihan = 1;
+        }
+        
+        cin.ignore(); // membersihkan buffer
+        
+        double harga = 0;
+        string namaItem;
+        
+        switch(pilihan) {
+            case 1: 
+                namaItem = "Pemeriksaan Umum";
+                harga = 150000;
+                break;
+            case 2: 
+                namaItem = "Pemeriksaan Spesialis";
+                harga = 300000;
+                break;
+            case 3: 
+                namaItem = "Vaksinasi Dasar";
+                harga = 200000;
+                break;
+            case 4: 
+                namaItem = "Vaksinasi Premium";
+                harga = 350000;
+                break;
+            case 5: 
+                namaItem = "Grooming Basic";
+                harga = 100000;
+                break;
+            case 6: 
+                namaItem = "Grooming Premium";
+                harga = 250000;
+                break;
+            case 7: 
+                namaItem = "Obat Antibiotik";
+                harga = 75000;
+                break;
+            case 8: 
+                namaItem = "Obat Vitamin";
+                harga = 50000;
+                break;
+            case 9: 
+                namaItem = "Obat Anti Nyeri";
+                harga = 65000;
+                break;
+            case 10: 
+                namaItem = "Rawat Inap (per hari)";
+                harga = 500000;
+                break;
+            case 11: 
+                namaItem = "Operasi";
+                harga = 2500000;
+                break;
+            case 12: 
+                cout << "Nama Item: ";
+                getline(cin, namaItem);
+                cout << "Harga: Rp ";
+                cin >> harga;
+                cin.ignore();
+                break;
+        }
+        
+        itemBaru->namaItem = namaItem;
+        itemBaru->harga = harga;
+        
+        // Input jumlah
+        cout << "Jumlah: ";
+        cin >> itemBaru->jumlah;
+        
+        if (cin.fail() || itemBaru->jumlah <= 0) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            itemBaru->jumlah = 1;
+        }
+        
+        cin.ignore(); // membersihkan buffer
+        
+        // Hitung subtotal
+        itemBaru->subtotal = itemBaru->harga * itemBaru->jumlah;
+        
+        // Update total transaksi
+        transaksi->totalBiaya += itemBaru->subtotal;
+        
+        // Tambahkan ke linked list item transaksi
+        itemBaru->next = NULL;
+        itemBaru->prev = NULL;
+        
+        if (transaksi->itemHead == NULL) {
+            transaksi->itemHead = itemBaru;
+            transaksi->itemTail = itemBaru;
+        } else {
+            transaksi->itemTail->next = itemBaru;
+            itemBaru->prev = transaksi->itemTail;
+            transaksi->itemTail = itemBaru;
+        }
+        
+        transaksi->jumlahItem++;
+        
+        cout << "Item berhasil ditambahkan!\n";
+    }
+    
+    // Fungsi untuk proses pembayaran
+    void prosesPembayaran(Transaksi* transaksi) {
+        cout << "\n====================================================\n";
+        cout << "               PROSES PEMBAYARAN\n";
+        cout << "====================================================\n";
+        cout << "TOTAL YANG HARUS DIBAYAR: Rp " << fixed << setprecision(0) << transaksi->totalBiaya << endl;
+        
+        // Pilih metode pembayaran
+        cout << "\nPILIH METODE PEMBAYARAN:\n";
+        cout << "  1. Tunai\n";
+        cout << "  2. Transfer Bank\n";
+        cout << "  3. E-Wallet (GoPay/OVO/Dana)\n";
+        cout << "  Pilihan (1-3): ";
+        
+        int pilihan;
+        cin >> pilihan;
+        
+        if (cin.fail() || pilihan < 1 || pilihan > 3) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            pilihan = 1;
+        }
+        
+        switch(pilihan) {
+            case 1: 
+                transaksi->metodePembayaran = "Tunai";
+                break;
+            case 2: 
+                transaksi->metodePembayaran = "Transfer Bank";
+                break;
+            case 3: 
+                transaksi->metodePembayaran = "E-Wallet";
+                break;
+        }
+        
+        // Input pembayaran
+        if (transaksi->metodePembayaran == "Tunai") {
+            do {
+                cout << "\nMasukkan jumlah uang yang dibayarkan: Rp ";
+                cin >> transaksi->pembayaranDiterima;
+                
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    transaksi->pembayaranDiterima = 0;
+                }
+                
+                if (transaksi->pembayaranDiterima < transaksi->totalBiaya) {
+                    cout << "Pembayaran kurang! Kurang Rp " 
+                         << fixed << setprecision(0) 
+                         << (transaksi->totalBiaya - transaksi->pembayaranDiterima) << endl;
+                    cout << "Silakan masukkan jumlah yang cukup.\n";
+                }
+            } while (transaksi->pembayaranDiterima < transaksi->totalBiaya);
+            
+            transaksi->kembalian = transaksi->pembayaranDiterima - transaksi->totalBiaya;
+            transaksi->statusPembayaran = "Lunas";
+            
+            if (transaksi->kembalian > 0) {
+                cout << "Kembalian: Rp " << fixed << setprecision(0) << transaksi->kembalian << endl;
+            }
+        } else {
+            transaksi->pembayaranDiterima = transaksi->totalBiaya;
+            transaksi->kembalian = 0;
+            transaksi->statusPembayaran = "Lunas";
+            cout << "\nPembayaran dengan " << transaksi->metodePembayaran << " berhasil!\n";
+        }
+        
+        cout << "\nStatus Pembayaran: " << transaksi->statusPembayaran << endl;
+        cin.ignore(); // membersihkan buffer
+    }
+    
+    // Fungsi untuk mencetak struk pembayaran
+    void cetakStrukPembayaran(Transaksi* transaksi) {
+        cout << "\n\n";
+        cout << "====================================================\n";
+        cout << "              PET COMPANY - STRUK PEMBAYARAN\n";
+        cout << "              Jl. Kesehatan Hewan No. 123\n";
+        cout << "              Telp: (021) 1234-5678\n";
+        cout << "====================================================\n";
+        cout << "ID Transaksi   : " << transaksi->idTransaksi << endl;
+        cout << "Tanggal        : " << transaksi->tanggal << endl;
+        cout << "Waktu          : " << transaksi->waktu << endl;
+        cout << "ID Hewan       : " << transaksi->idHewan << endl;
+        cout << "Nama Hewan     : " << transaksi->namaHewan << endl;
+        cout << "Nama Pemilik   : " << transaksi->pemilik << endl;
+        cout << "----------------------------------------------------\n";
+        cout << left << setw(30) << "ITEM" 
+             << setw(8) << "QTY" 
+             << setw(12) << "HARGA" 
+             << setw(12) << "SUBTOTAL" << endl;
+        cout << "----------------------------------------------------\n";
+        
+        // Tampilkan semua item
+        ItemTransaksi* currentItem = transaksi->itemHead;
+        while (currentItem != NULL) {
+            cout << left << setw(30) << currentItem->namaItem 
+                 << setw(8) << currentItem->jumlah 
+                 << "Rp " << setw(9) << fixed << setprecision(0) << currentItem->harga
+                 << "Rp " << setw(9) << fixed << setprecision(0) << currentItem->subtotal << endl;
+            currentItem = currentItem->next;
+        }
+        
+        cout << "----------------------------------------------------\n";
+        cout << right << setw(52) << "TOTAL: Rp " 
+             << fixed << setprecision(0) << transaksi->totalBiaya << endl;
+        cout << "Metode Bayar   : " << transaksi->metodePembayaran << endl;
+        cout << "Dibayar        : Rp " << fixed << setprecision(0) << transaksi->pembayaranDiterima << endl;
+        
+        if (transaksi->kembalian > 0) {
+            cout << "Kembalian      : Rp " << fixed << setprecision(0) << transaksi->kembalian << endl;
+        }
+        
+        cout << "Status         : " << transaksi->statusPembayaran << endl;
+        cout << "====================================================\n";
+        cout << "        TERIMA KASIH TELAH BERKUNJUNG\n";
+        cout << "      Kesehatan Hewan Anda Prioritas Kami\n";
+        cout << "====================================================\n\n";
+    }
+    
+    // Fungsi untuk mencari transaksi berdasarkan ID
+    Transaksi* cariTransaksiByID(string idTransaksi) {
+        Transaksi* current = headTransaksi;
+        while (current != NULL) {
+            if (current->idTransaksi == idTransaksi) {
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+    
+    // Fungsi untuk menampilkan semua transaksi
+    void tampilkanSemuaTransaksi() {
+        if (headTransaksi == NULL) {
+            cout << "\nTidak ada transaksi yang tersimpan!\n";
+            return;
+        }
+        
+        Transaksi* current = headTransaksi;
+        int nomor = 1;
+        
+        cout << "\n====================================================\n";
+        cout << "           DAFTAR SEMUA TRANSAKSI\n";
+        cout << "====================================================\n";
+        
+        while (current != NULL) {
+            cout << "\nTRANSAKSI #" << nomor << ":\n";
+            cout << left << setw(20) << "  ID Transaksi" << ": " << current->idTransaksi << endl;
+            cout << left << setw(20) << "  Tanggal" << ": " << current->tanggal << endl;
+            cout << left << setw(20) << "  Nama Hewan" << ": " << current->namaHewan << endl;
+            cout << left << setw(20) << "  Pemilik" << ": " << current->pemilik << endl;
+            cout << left << setw(20) << "  Total Biaya" << ": Rp " << fixed << setprecision(0) << current->totalBiaya << endl;
+            cout << left << setw(20) << "  Metode Bayar" << ": " << current->metodePembayaran << endl;
+            cout << left << setw(20) << "  Status" << ": " << current->statusPembayaran << endl;
+            cout << "  ---------------------------------------------\n";
+            
+            current = current->next;
+            nomor++;
+        }
+        
+        cout << "\nTOTAL TRANSAKSI: " << totalTransaksi << endl;
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk menampilkan transaksi dari belakang (terbaru)
+    void tampilkanTransaksiTerbalik() {
+        if (tailTransaksi == NULL) {
+            cout << "\nTidak ada transaksi yang tersimpan!\n";
+            return;
+        }
+        
+        Transaksi* current = tailTransaksi;
+        int nomor = totalTransaksi;
+        
+        cout << "\n====================================================\n";
+        cout << "     DAFTAR TRANSAKSI (TERBARU KE TERLAMA)\n";
+        cout << "====================================================\n";
+        
+        while (current != NULL) {
+            cout << "\nTRANSAKSI #" << nomor << ":\n";
+            cout << left << setw(20) << "  ID Transaksi" << ": " << current->idTransaksi << endl;
+            cout << left << setw(20) << "  Tanggal" << ": " << current->tanggal << endl;
+            cout << left << setw(20) << "  Nama Hewan" << ": " << current->namaHewan << endl;
+            cout << left << setw(20) << "  Pemilik" << ": " << current->pemilik << endl;
+            cout << left << setw(20) << "  Total Biaya" << ": Rp " << fixed << setprecision(0) << current->totalBiaya << endl;
+            cout << left << setw(20) << "  Metode Bayar" << ": " << current->metodePembayaran << endl;
+            cout << left << setw(20) << "  Status" << ": " << current->statusPembayaran << endl;
+            cout << "  ---------------------------------------------\n";
+            
+            current = current->prev;
+            nomor--;
+        }
+        
+        cout << "\nTOTAL TRANSAKSI: " << totalTransaksi << endl;
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk melihat detail transaksi
+    void lihatDetailTransaksi() {
+        if (headTransaksi == NULL) {
+            cout << "\nTidak ada transaksi yang tersimpan!\n";
+            return;
+        }
+        
+        string idTransaksi;
+        cout << "\nMasukkan ID Transaksi: ";
+        cin.ignore();
+        getline(cin, idTransaksi);
+        
+        Transaksi* transaksi = cariTransaksiByID(idTransaksi);
+        
+        if (transaksi == NULL) {
+            cout << "\nTransaksi dengan ID " << idTransaksi << " tidak ditemukan!\n";
+            return;
+        }
+        
+        cetakStrukPembayaran(transaksi);
+    }
+    
+    // Fungsi untuk menghapus transaksi
+    void hapusTransaksi() {
+        if (headTransaksi == NULL) {
+            cout << "\nTidak ada transaksi yang tersimpan!\n";
+            return;
+        }
+        
+        string idTransaksi;
+        cout << "\nMasukkan ID Transaksi yang akan dihapus: ";
+        cin.ignore();
+        getline(cin, idTransaksi);
+        
+        Transaksi* transaksi = cariTransaksiByID(idTransaksi);
+        
+        if (transaksi == NULL) {
+            cout << "\nTransaksi dengan ID " << idTransaksi << " tidak ditemukan!\n";
+            return;
+        }
+        
+        cout << "\nDATA TRANSAKSI YANG AKAN DIHAPUS:\n";
+        cout << "ID Transaksi : " << transaksi->idTransaksi << endl;
+        cout << "Tanggal      : " << transaksi->tanggal << endl;
+        cout << "Nama Hewan   : " << transaksi->namaHewan << endl;
+        cout << "Total Biaya  : Rp " << fixed << setprecision(0) << transaksi->totalBiaya << endl;
+        
+        cout << "\nAPAKAH ANDA YAKIN INGIN MENGHAPUS? (y/n): ";
+        char konfirmasi;
+        cin >> konfirmasi;
+        cin.ignore();
+        
+        if (konfirmasi != 'y' && konfirmasi != 'Y') {
+            cout << "\nPenghapusan dibatalkan.\n";
+            return;
+        }
+        
+        // Hapus item transaksi terlebih dahulu
+        hapusItemTransaksi(transaksi->itemHead);
+        
+        // Hapus dari linked list transaksi
+        if (transaksi->prev != NULL) {
+            transaksi->prev->next = transaksi->next;
+        } else {
+            headTransaksi = transaksi->next;
+        }
+        
+        if (transaksi->next != NULL) {
+            transaksi->next->prev = transaksi->prev;
+        } else {
+            tailTransaksi = transaksi->prev;
+        }
+        
+        delete transaksi;
+        totalTransaksi--;
+        
+        cout << "\nTransaksi berhasil dihapus!\n";
+        cout << "Total transaksi saat ini: " << totalTransaksi << endl;
+    }
+    
+    // Fungsi untuk laporan keuangan harian
+    void laporanKeuanganHarian() {
+        if (headTransaksi == NULL) {
+            cout << "\nTidak ada transaksi yang tersimpan!\n";
+            return;
+        }
+        
+        string tanggal;
+        cout << "\nMasukkan tanggal (DD-MM-YYYY) atau ketik 'hari' untuk hari ini: ";
+        cin.ignore();
+        getline(cin, tanggal);
+        
+        if (tanggal == "hari") {
+            tanggal = getTanggalSekarang();
+        }
+        
+        Transaksi* current = headTransaksi;
+        int jumlahTransaksi = 0;
+        double totalPendapatan = 0.0;
+        double tunai = 0, transfer = 0, ewallet = 0;
+        
+        cout << "\n====================================================\n";
+        cout << "        LAPORAN KEUANGAN HARIAN\n";
+        cout << "        Tanggal: " << tanggal << "\n";
+        cout << "====================================================\n";
+        
+        cout << left << setw(15) << "ID Transaksi" 
+             << setw(15) << "Nama Hewan"
+             << setw(15) << "Metode Bayar"
+             << setw(15) << "Total" << endl;
+        cout << "----------------------------------------------------\n";
+        
+        while (current != NULL) {
+            if (current->tanggal == tanggal && current->statusPembayaran == "Lunas") {
+                jumlahTransaksi++;
+                totalPendapatan += current->totalBiaya;
+                
+                // Hitung berdasarkan metode pembayaran
+                if (current->metodePembayaran == "Tunai") tunai += current->totalBiaya;
+                else if (current->metodePembayaran == "Transfer Bank") transfer += current->totalBiaya;
+                else if (current->metodePembayaran == "E-Wallet") ewallet += current->totalBiaya;
+                
+                cout << left << setw(15) << current->idTransaksi.substr(0, 12)
+                     << setw(15) << (current->namaHewan.length() > 12 ? current->namaHewan.substr(0, 12) + "..." : current->namaHewan)
+                     << setw(15) << current->metodePembayaran
+                     << "Rp " << fixed << setprecision(0) << setw(12) << current->totalBiaya << endl;
+            }
+            current = current->next;
+        }
+        
+        cout << "----------------------------------------------------\n";
+        cout << "\nRINGKASAN:\n";
+        cout << "Jumlah Transaksi  : " << jumlahTransaksi << endl;
+        cout << "Total Pendapatan  : Rp " << fixed << setprecision(0) << totalPendapatan << endl;
+        
+        if (jumlahTransaksi > 0) {
+            double rataRata = totalPendapatan / jumlahTransaksi;
+            cout << "Rata-rata         : Rp " << fixed << setprecision(0) << rataRata << endl;
+        }
+        
+        cout << "\nBREAKDOWN METODE PEMBAYARAN:\n";
+        cout << "  Tunai           : Rp " << fixed << setprecision(0) << tunai 
+             << " (" << (totalPendapatan > 0 ? (tunai / totalPendapatan * 100) : 0) << "%)" << endl;
+        cout << "  Transfer Bank   : Rp " << fixed << setprecision(0) << transfer 
+             << " (" << (totalPendapatan > 0 ? (transfer / totalPendapatan * 100) : 0) << "%)" << endl;
+        cout << "  E-Wallet        : Rp " << fixed << setprecision(0) << ewallet 
+             << " (" << (totalPendapatan > 0 ? (ewallet / totalPendapatan * 100) : 0) << "%)" << endl;
+        
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk laporan keuangan bulanan
+    void laporanKeuanganBulanan() {
+        if (headTransaksi == NULL) {
+            cout << "\nTidak ada transaksi yang tersimpan!\n";
+            return;
+        }
+        
+        string bulanTahun;
+        cout << "\nMasukkan bulan dan tahun (MM-YYYY) atau ketik 'bulan' untuk bulan ini: ";
+        cin.ignore();
+        getline(cin, bulanTahun);
+        
+        // Jika input "bulan", ambil bulan ini
+        if (bulanTahun == "bulan") {
+            time_t sekarang = time(0);
+            tm* waktuLokal = localtime(&sekarang);
+            char buffer[8];
+            strftime(buffer, sizeof(buffer), "%m-%Y", waktuLokal);
+            bulanTahun = buffer;
+        }
+        
+        Transaksi* current = headTransaksi;
+        int jumlahTransaksi = 0;
+        double totalPendapatan = 0.0;
+        
+        cout << "\n====================================================\n";
+        cout << "        LAPORAN KEUANGAN BULANAN\n";
+        cout << "        Periode: " << bulanTahun << "\n";
+        cout << "====================================================\n";
+        
+        // Array untuk pendapatan harian
+        double pendapatanHarian[31] = {0};
+        int transaksiHarian[31] = {0};
+        
+        while (current != NULL) {
+            if (current->statusPembayaran == "Lunas") {
+                // Cek apakah transaksi di bulan yang diminta
+                size_t pos = current->tanggal.find('-');
+                if (pos != string::npos) {
+                    string tanggal = current->tanggal;
+                    string bulanTransaksi = tanggal.substr(pos + 1, 7); // MM-YYYY
+                    
+                    if (bulanTransaksi == bulanTahun) {
+                        jumlahTransaksi++;
+                        totalPendapatan += current->totalBiaya;
+                        
+                        // Ekstrak hari
+                        int hari = atoi(tanggal.substr(0, 2).c_str());
+                        if (hari >= 1 && hari <= 31) {
+                            pendapatanHarian[hari-1] += current->totalBiaya;
+                            transaksiHarian[hari-1]++;
+                        }
+                    }
+                }
+            }
+            current = current->next;
+        }
+        
+        // Tampilkan ringkasan
+        cout << "Jumlah Transaksi : " << jumlahTransaksi << endl;
+        cout << "Total Pendapatan : Rp " << fixed << setprecision(0) << totalPendapatan << endl;
+        
+        if (jumlahTransaksi > 0) {
+            double rataRata = totalPendapatan / jumlahTransaksi;
+            cout << "Rata-rata        : Rp " << fixed << setprecision(0) << rataRata << endl;
+        }
+        
+        // Tampilkan pendapatan per hari
+        cout << "\nPENDAPATAN PER HARI:\n";
+        cout << "Hari   Transaksi   Pendapatan\n";
+        cout << "--------------------------------\n";
+        
+        for (int i = 0; i < 31; i++) {
+            if (transaksiHarian[i] > 0) {
+                cout << setw(2) << (i+1) << "     "
+                     << setw(5) << transaksiHarian[i] << "     Rp "
+                     << setw(10) << fixed << setprecision(0) << pendapatanHarian[i] << endl;
+            }
+        }
+        
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk statistik layanan terlaris
+    void statistikLayananTerlaris() {
+        if (headTransaksi == NULL) {
+            cout << "\nTidak ada transaksi yang tersimpan!\n";
+            return;
+        }
+        
+        cout << "\n====================================================\n";
+        cout << "        STATISTIK LAYANAN TERLARIS\n";
+        cout << "====================================================\n";
+        
+        // Simple statistik - hanya hitung total per kategori
+        double pemeriksaan = 0, vaksinasi = 0, grooming = 0, obat = 0, lainnya = 0;
+        int countPemeriksaan = 0, countVaksinasi = 0, countGrooming = 0, countObat = 0, countLainnya = 0;
+        
+        Transaksi* current = headTransaksi;
+        
+        while (current != NULL) {
+            ItemTransaksi* item = current->itemHead;
+            while (item != NULL) {
+                string nama = item->namaItem;
+                if (nama.find("Pemeriksaan") != string::npos) {
+                    pemeriksaan += item->subtotal;
+                    countPemeriksaan += item->jumlah;
+                } else if (nama.find("Vaksinasi") != string::npos) {
+                    vaksinasi += item->subtotal;
+                    countVaksinasi += item->jumlah;
+                } else if (nama.find("Grooming") != string::npos || nama.find("grooming") != string::npos) {
+                    grooming += item->subtotal;
+                    countGrooming += item->jumlah;
+                } else if (nama.find("Obat") != string::npos || nama.find("obat") != string::npos) {
+                    obat += item->subtotal;
+                    countObat += item->jumlah;
+                } else {
+                    lainnya += item->subtotal;
+                    countLainnya += item->jumlah;
+                }
+                item = item->next;
+            }
+            current = current->next;
+        }
+        
+        cout << left << setw(20) << "KATEGORI" 
+             << setw(15) << "JUMLAH"
+             << setw(20) << "TOTAL PENDAPATAN" << endl;
+        cout << "----------------------------------------------------\n";
+        
+        cout << left << setw(20) << "Pemeriksaan"
+             << setw(15) << countPemeriksaan
+             << "Rp " << fixed << setprecision(0) << setw(17) << pemeriksaan << endl;
+        
+        cout << left << setw(20) << "Vaksinasi"
+             << setw(15) << countVaksinasi
+             << "Rp " << fixed << setprecision(0) << setw(17) << vaksinasi << endl;
+        
+        cout << left << setw(20) << "Grooming"
+             << setw(15) << countGrooming
+             << "Rp " << fixed << setprecision(0) << setw(17) << grooming << endl;
+        
+        cout << left << setw(20) << "Obat"
+             << setw(15) << countObat
+             << "Rp " << fixed << setprecision(0) << setw(17) << obat << endl;
+        
+        cout << left << setw(20) << "Lainnya"
+             << setw(15) << countLainnya
+             << "Rp " << fixed << setprecision(0) << setw(17) << lainnya << endl;
+        
+        cout << "====================================================\n";
+        
+        // Tampilkan layanan paling populer
+        double total = pemeriksaan + vaksinasi + grooming + obat + lainnya;
+        if (total > 0) {
+            cout << "\nPERSENTASE PENDAPATAN:\n";
+            cout << "Pemeriksaan: " << fixed << setprecision(1) << (pemeriksaan/total*100) << "%\n";
+            cout << "Vaksinasi  : " << fixed << setprecision(1) << (vaksinasi/total*100) << "%\n";
+            cout << "Grooming   : " << fixed << setprecision(1) << (grooming/total*100) << "%\n";
+            cout << "Obat       : " << fixed << setprecision(1) << (obat/total*100) << "%\n";
+            cout << "Lainnya    : " << fixed << setprecision(1) << (lainnya/total*100) << "%\n";
+        }
+        
+        cout << "====================================================\n";
+    }
+    
+    // Fungsi untuk cetak ulang struk
+    void cetakUlangStruk() {
+        if (headTransaksi == NULL) {
+            cout << "\nTidak ada transaksi yang tersimpan!\n";
+            return;
+        }
+        
+        string idTransaksi;
+        cout << "\nMasukkan ID Transaksi untuk cetak ulang struk: ";
+        cin.ignore();
+        getline(cin, idTransaksi);
+        
+        Transaksi* transaksi = cariTransaksiByID(idTransaksi);
+        if (transaksi != NULL) {
+            cetakStrukPembayaran(transaksi);
+        } else {
+            cout << "\nTransaksi tidak ditemukan!\n";
+        }
+    }
+    
+    // Fungsi untuk membersihkan semua transaksi
+    void bersihkanSemuaTransaksi() {
+        Transaksi* current = headTransaksi;
+        while (current != NULL) {
+            Transaksi* next = current->next;
+            hapusItemTransaksi(current->itemHead);
+            delete current;
+            current = next;
+        }
+        headTransaksi = NULL;
+        tailTransaksi = NULL;
+        totalTransaksi = 0;
+        counterID = 1;
+    }
+    
+    // Getter untuk total transaksi
+    int getTotalTransaksi() {
+        return totalTransaksi;
+    }
+};
+
+// Fungsi untuk menampilkan menu
+void tampilkanMenu() {
+    cout << "\n=======================================================\n";
+    cout << "        SISTEM TRANSAKSI & PEMBAYARAN\n";
+    cout << "               PET COMPANY\n";
+    cout << "=======================================================\n";
+    cout << "  1. Buat Transaksi Baru\n";
+    cout << "  2. Tampilkan Semua Transaksi\n";
+    cout << "  3. Tampilkan Transaksi (Terbaru ke Terlama)\n";
+    cout << "  4. Lihat Detail Transaksi\n";
+    cout << "  5. Hapus Transaksi\n";
+    cout << "  6. Laporan Keuangan Harian\n";
+    cout << "  7. Laporan Keuangan Bulanan\n";
+    cout << "  8. Statistik Layanan Terlaris\n";
+    cout << "  9. Cetak Ulang Struk\n";
+    cout << "  10. Keluar\n";
+    cout << "=======================================================\n";
+    cout << "  Pilihan Anda (1-10): ";
+}
+
+// Fungsi utama
+int main() {
+    TransaksiManager sistemTransaksi;
+    int pilihan;
+    
+    cout << "=========================================================\n";
+    cout << "     SISTEM TRANSAKSI & PEMBAYARAN PET COMPANY\n";
+    cout << "           (Menggunakan Doubly Linked List)\n";
+    cout << "=========================================================\n";
+    
+    do {
+        tampilkanMenu();
+        cin >> pilihan;
+        
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "\nInput tidak valid! Masukkan angka 1-10.\n";
+            continue;
+        }
+        
+        switch(pilihan) {
+            case 1:
+                sistemTransaksi.buatTransaksiBaru();
+                break;
+                
+            case 2:
+                sistemTransaksi.tampilkanSemuaTransaksi();
+                break;
+                
+            case 3:
+                sistemTransaksi.tampilkanTransaksiTerbalik();
+                break;
+                
+            case 4:
+                sistemTransaksi.lihatDetailTransaksi();
+                break;
+                
+            case 5:
+                sistemTransaksi.hapusTransaksi();
+                break;
+                
+            case 6:
+                sistemTransaksi.laporanKeuanganHarian();
+                break;
+                
+            case 7:
+                sistemTransaksi.laporanKeuanganBulanan();
+                break;
+                
+            case 8:
+                sistemTransaksi.statistikLayananTerlaris();
+                break;
+                
+            case 9:
+                sistemTransaksi.cetakUlangStruk();
+                break;
+                
+            case 10:
+                cout << "\n====================================================\n";
+                cout << "  Terima kasih telah menggunakan sistem transaksi!\n";
+                cout << "====================================================\n";
+                break;
+                
+            default:
+                cout << "\nPilihan tidak valid! Masukkan angka 1-10.\n";
+        }
+        
+        if (pilihan != 10) {
+            cout << "\nTekan Enter untuk melanjutkan...";
+            cin.ignore();
+            cin.get();
+        }
+        
+    } while (pilihan != 10);
+    
+    return 0;
+}
+
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <ctime>
+#include <limits>
+#include <cstdlib>
+#include <sstream>  // Tambahkan ini
+
+using namespace std;
+
+struct Produk {
+    string id;
+    string nama;
+    string kategori; 
+    int stok;
+    double harga;
+    string deskripsi;
+    Produk* prev;
+    Produk* next;
+};
+
+struct TransaksiDetail {
+    string id_produk;
+    string nama_produk;
+    int jumlah;
+    double harga;
+    double subtotal;
+    TransaksiDetail* next;
+};
+
+struct Transaksi {
+    int id_transaksi;
+    string tanggal;
+    string waktu;
+    double total;
+    TransaksiDetail* detail;
+    Transaksi* prev;
+    Transaksi* next;
+};
+
+class PetCompany {
+private:
+    Produk* head_produk;
+    Produk* tail_produk;
+    Transaksi* head_transaksi;
+    Transaksi* tail_transaksi;
+    int transaksi_counter;
+    
+    bool isIdExist(string id) {
+        Produk* current = head_produk;
+        while (current != NULL) {
+            if (current->id == id) 
+                return true;
+            current = current->next;
+        }
+        return false;
+    }
+    
+    // Fungsi untuk konversi int ke string (alternatif to_string)
+    string intToString(int num) {
+        stringstream ss;
+        ss << num;
+        return ss.str();
+    }
+    
+    string generateId(string kategori) {
+        string prefix;
+        if (kategori == "makanan") prefix = "FD";
+        else if (kategori == "vitamin") prefix = "VT";
+        else if (kategori == "obat") prefix = "OB";
+        else if (kategori == "aksesoris") prefix = "AC";
+        else if (kategori == "mainan") prefix = "TN";
+        else prefix = "PR";
+        
+        int num = 1;
+        string id;
+        do {
+            id = prefix + intToString(num);
+            num++;
+        } while (isIdExist(id));
+        
+        return id;
+    }
+    
+    string getCurrentDate() {
+        time_t now = time(0);
+        tm* ltm = localtime(&now);
+        
+        stringstream ss;
+        ss << ltm->tm_mday << "-" 
+           << (1 + ltm->tm_mon) << "-" 
+           << (1900 + ltm->tm_year);
+        
+        return ss.str();
+    }
+    
+    string getCurrentTime() {
+        time_t now = time(0);
+        tm* ltm = localtime(&now);
+        
+        stringstream ss;
+        ss << ltm->tm_hour << ":" 
+           << ltm->tm_min << ":" 
+           << ltm->tm_sec;
+        
+        return ss.str();
+    }
+    
+    void clearInputBuffer() {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+    
+public:
+    PetCompany() {
+        head_produk = tail_produk = NULL;
+        head_transaksi = tail_transaksi = NULL;
+        transaksi_counter = 1000;
+    }
+    
+    ~PetCompany() {
+        Produk* current_produk = head_produk;
+        while (current_produk != NULL) {
+            Produk* temp = current_produk;
+            current_produk = current_produk->next;
+            delete temp;
+        }
+        
+        Transaksi* current_trans = head_transaksi;
+        while (current_trans != NULL) {
+            TransaksiDetail* current_detail = current_trans->detail;
+            while (current_detail != NULL) {
+                TransaksiDetail* temp = current_detail;
+                current_detail = current_detail->next;
+                delete temp;
+            }
+            
+            Transaksi* temp = current_trans;
+            current_trans = current_trans->next;
+            delete temp;
+        }
+    }
+    
+    void tambahProduk() {
+        Produk* baru = new Produk;
+        
+        cout << "\n=== TAMBAH PRODUK BARU ===\n";
+        
+        cout << "Kategori (makanan/vitamin/obat/aksesoris/mainan): ";
+        getline(cin, baru->kategori);
+        
+        if (baru->kategori != "makanan" && baru->kategori != "vitamin" && 
+            baru->kategori != "obat" && baru->kategori != "aksesoris" && 
+            baru->kategori != "mainan") {
+            cout << "Kategori tidak valid!\n";
+            delete baru;
+            return;
+        }
+        
+        baru->id = generateId(baru->kategori);
+        cout << "ID Produk: " << baru->id << endl;
+        
+        cout << "Nama Produk: ";
+        getline(cin, baru->nama);
+        
+        cout << "Stok: ";
+        cin >> baru->stok;
+        
+        cout << "Harga: ";
+        cin >> baru->harga;
+        
+        clearInputBuffer();
+        
+        cout << "Deskripsi: ";
+        getline(cin, baru->deskripsi);
+        
+        baru->prev = NULL;
+        baru->next = NULL;
+        
+        if (head_produk == NULL) {
+            head_produk = tail_produk = baru;
+        } else {
+            tail_produk->next = baru;
+            baru->prev = tail_produk;
+            tail_produk = baru;
+        }
+        
+        cout << "\nProduk berhasil ditambahkan!\n";
+    }
+    
+    void tampilkanSemuaProduk() {
+        if (head_produk == NULL) {
+            cout << "\nTidak ada produk yang terdaftar.\n";
+            return;
+        }
+        
+        cout << "\n=== DAFTAR SEMUA PRODUK ===\n";
+        cout << "=============================================================================================================\n";
+        cout << left << setw(10) << "ID" 
+             << setw(20) << "Nama" 
+             << setw(15) << "Kategori" 
+             << setw(10) << "Stok" 
+             << setw(15) << "Harga" 
+             << "Deskripsi\n";
+        cout << "=============================================================================================================\n";
+        
+        Produk* current = head_produk;
+        while (current != NULL) {
+            cout << left << setw(10) << current->id
+                 << setw(20) << current->nama
+                 << setw(15) << current->kategori
+                 << setw(10) << current->stok
+                 << "Rp" << setw(13) << fixed << setprecision(2) << current->harga
+                 << current->deskripsi << endl;
+            current = current->next;
+        }
+        cout << "=============================================================================================================\n";
+    }
+    
+    Produk* cariProdukById(string id) {
+        Produk* current = head_produk;
+        while (current != NULL) {
+            if (current->id == id) return current;
+            current = current->next;
+        }
+        return NULL;
+    }
+    
+    void editProduk() {
+        string id;
+        cout << "\n=== EDIT PRODUK ===\n";
+        cout << "Masukkan ID produk yang akan diedit: ";
+        cin >> id;
+        clearInputBuffer();
+        
+        Produk* produk = cariProdukById(id);
+        if (produk == NULL) {
+            cout << "Produk dengan ID " << id << " tidak ditemukan!\n";
+            return;
+        }
+        
+        cout << "\nData saat ini:\n";
+        cout << "ID: " << produk->id << endl;
+        cout << "Nama: " << produk->nama << endl;
+        cout << "Kategori: " << produk->kategori << endl;
+        cout << "Stok: " << produk->stok << endl;
+        cout << "Harga: Rp" << fixed << setprecision(2) << produk->harga << endl;
+        cout << "Deskripsi: " << produk->deskripsi << endl;
+        
+        cout << "\nMasukkan data baru (kosongkan jika tidak ingin mengubah):\n";
+        
+        cout << "Nama Produk [" << produk->nama << "]: ";
+        string input;
+        getline(cin, input);
+        if (!input.empty()) produk->nama = input;
+        
+        cout << "Kategori [" << produk->kategori << "]: ";
+        getline(cin, input);
+        if (!input.empty()) produk->kategori = input;
+        
+        cout << "Stok [" << produk->stok << "]: ";
+        getline(cin, input);
+        if (!input.empty()) produk->stok = atoi(input.c_str());
+        
+        cout << "Harga [" << produk->harga << "]: ";
+        getline(cin, input);
+        if (!input.empty()) produk->harga = atof(input.c_str());
+        
+        cout << "Deskripsi [" << produk->deskripsi << "]: ";
+        getline(cin, input);
+        if (!input.empty()) produk->deskripsi = input;
+        
+        cout << "\nProduk berhasil diupdate!\n";
+    }
+    
+    void hapusProduk() {
+        string id;
+        cout << "\n=== HAPUS PRODUK ===\n";
+        cout << "Masukkan ID produk yang akan dihapus: ";
+        cin >> id;
+        clearInputBuffer();
+        
+        Produk* produk = cariProdukById(id);
+        if (produk == NULL) {
+            cout << "Produk dengan ID " << id << " tidak ditemukan!\n";
+            return;
+        }
+        
+        cout << "\nAnda akan menghapus produk:\n";
+        cout << "ID: " << produk->id << endl;
+        cout << "Nama: " << produk->nama << endl;
+        cout << "Kategori: " << produk->kategori << endl;
+        cout << "Yakin? (y/n): ";
+        char confirm;
+        cin >> confirm;
+        clearInputBuffer();
+        
+        if (confirm != 'y' && confirm != 'Y') {
+            cout << "Penghapusan dibatalkan.\n";
+            return;
+        }
+        
+        if (produk->prev != NULL) {
+            produk->prev->next = produk->next;
+        } else {
+            head_produk = produk->next;
+        }
+        
+        if (produk->next != NULL) {
+            produk->next->prev = produk->prev;
+        } else {
+            tail_produk = produk->prev;
+        }
+        
+        delete produk;
+        cout << "Produk berhasil dihapus!\n";
+    }
+    
+    void cariProduk() {
+        int pilihan;
+        cout << "\n=== PENCARIAN PRODUK ===\n";
+        cout << "1. Cari berdasarkan nama\n";
+        cout << "2. Cari berdasarkan kategori\n";
+        cout << "Pilihan: ";
+        cin >> pilihan;
+        clearInputBuffer();
+        
+        if (pilihan == 1) {
+            string keyword;
+            cout << "Masukkan nama produk: ";
+            getline(cin, keyword);
+            
+            cout << "\n=== HASIL PENCARIAN ===\n";
+            cout << "=============================================================================================================\n";
+            cout << left << setw(10) << "ID" 
+                 << setw(20) << "Nama" 
+                 << setw(15) << "Kategori" 
+                 << setw(10) << "Stok" 
+                 << setw(15) << "Harga" 
+                 << "Deskripsi\n";
+            cout << "=============================================================================================================\n";
+            
+            Produk* current = head_produk;
+            bool found = false;
+            while (current != NULL) {
+                if (current->nama.find(keyword) != string::npos) {
+                    cout << left << setw(10) << current->id
+                         << setw(20) << current->nama
+                         << setw(15) << current->kategori
+                         << setw(10) << current->stok
+                         << "Rp" << setw(13) << fixed << setprecision(2) << current->harga
+                         << current->deskripsi << endl;
+                    found = true;
+                }
+                current = current->next;
+            }
+            
+            if (!found) {
+                cout << "Tidak ditemukan produk dengan nama mengandung '" << keyword << "'\n";
+            }
+            cout << "=============================================================================================================\n";
+            
+        } else if (pilihan == 2) {
+            string kategori;
+            cout << "Masukkan kategori (makanan/vitamin/obat/aksesoris/mainan): ";
+            getline(cin, kategori);
+            
+            cout << "\n=== PRODUK DALAM KATEGORI " << kategori << " ===\n";
+            cout << "=============================================================================================================\n";
+            cout << left << setw(10) << "ID" 
+                 << setw(20) << "Nama" 
+                 << setw(15) << "Kategori" 
+                 << setw(10) << "Stok" 
+                 << setw(15) << "Harga" 
+                 << "Deskripsi\n";
+            cout << "=============================================================================================================\n";
+            
+            Produk* current = head_produk;
+            bool found = false;
+            while (current != NULL) {
+                if (current->kategori == kategori) {
+                    cout << left << setw(10) << current->id
+                         << setw(20) << current->nama
+                         << setw(15) << current->kategori
+                         << setw(10) << current->stok
+                         << "Rp" << setw(13) << fixed << setprecision(2) << current->harga
+                         << current->deskripsi << endl;
+                    found = true;
+                }
+                current = current->next;
+            }
+            
+            if (!found) {
+                cout << "Tidak ditemukan produk dalam kategori '" << kategori << "'\n";
+            }
+            cout << "=============================================================================================================\n";
+        } else {
+            cout << "Pilihan tidak valid!\n";
+        }
+    }
+    
+    void simulasiPembelian() {
+        cout << "\n=== SIMULASI PEMBELIAN ===\n";
+        
+        Transaksi* transaksi = new Transaksi;
+        transaksi->id_transaksi = transaksi_counter++;
+        transaksi->tanggal = getCurrentDate();
+        transaksi->waktu = getCurrentTime();
+        transaksi->total = 0;
+        transaksi->detail = NULL;
+        transaksi->prev = NULL;
+        transaksi->next = NULL;
+        
+        TransaksiDetail* tail_detail = NULL;
+        char lanjut = 'y';
+        
+        while (lanjut == 'y' || lanjut == 'Y') {
+            string id;
+            int jumlah;
+            
+            cout << "\nMasukkan ID produk: ";
+            cin >> id;
+            
+            Produk* produk = cariProdukById(id);
+            if (produk == NULL) {
+                cout << "Produk dengan ID " << id << " tidak ditemukan!\n";
+                continue;
+            }
+            
+            cout << "Produk: " << produk->nama << endl;
+            cout << "Stok tersedia: " << produk->stok << endl;
+            cout << "Harga: Rp" << fixed << setprecision(2) << produk->harga << endl;
+            cout << "Jumlah yang dibeli: ";
+            cin >> jumlah;
+            
+            if (jumlah <= 0) {
+                cout << "Jumlah tidak valid!\n";
+                continue;
+            }
+            
+            if (jumlah > produk->stok) {
+                cout << "Stok tidak cukup! Stok tersedia: " << produk->stok << endl;
+                continue;
+            }
+            
+            produk->stok -= jumlah;
+            
+            TransaksiDetail* detail = new TransaksiDetail;
+            detail->id_produk = produk->id;
+            detail->nama_produk = produk->nama;
+            detail->jumlah = jumlah;
+            detail->harga = produk->harga;
+            detail->subtotal = produk->harga * jumlah;
+            detail->next = NULL;
+            
+            if (transaksi->detail == NULL) {
+                transaksi->detail = detail;
+                tail_detail = detail;
+            } else {
+                tail_detail->next = detail;
+                tail_detail = detail;
+            }
+            
+            transaksi->total += detail->subtotal;
+            
+            cout << "Ditambahkan: " << produk->nama << " x" << jumlah 
+                 << " = Rp" << fixed << setprecision(2) << detail->subtotal << endl;
+            
+            cout << "\nTambah produk lain? (y/n): ";
+            cin >> lanjut;
+        }
+        
+        if (head_transaksi == NULL) {
+            head_transaksi = tail_transaksi = transaksi;
+        } else {
+            tail_transaksi->next = transaksi;
+            transaksi->prev = tail_transaksi;
+            tail_transaksi = transaksi;
+        }
+        
+        cout << "\nPembelian selesai! Total: Rp" << fixed << setprecision(2) << transaksi->total << endl;
+        cout << "ID Transaksi: " << transaksi->id_transaksi << endl;
+        
+        cout << "\nCetak nota? (y/n): ";
+        char cetak;
+        cin >> cetak;
+        clearInputBuffer();
+        
+        if (cetak == 'y' || cetak == 'Y') {
+            cetakNota(transaksi->id_transaksi);
+        }
+    }
+    
+    void cetakNota(int id_transaksi) {
+        Transaksi* transaksi = NULL;
+        Transaksi* current = head_transaksi;
+        
+        while (current != NULL) {
+            if (current->id_transaksi == id_transaksi) {
+                transaksi = current;
+                break;
+            }
+            current = current->next;
+        }
+        
+        if (transaksi == NULL) {
+            cout << "Transaksi dengan ID " << id_transaksi << " tidak ditemukan!\n";
+            return;
+        }
+        
+        cout << "\n";
+        cout << "==========================================\n";
+        cout << "           PET COMPANY SHOP\n";
+        cout << "        NOTA PEMBELIAN\n";
+        cout << "==========================================\n";
+        cout << "ID Transaksi : " << transaksi->id_transaksi << endl;
+        cout << "Tanggal      : " << transaksi->tanggal << endl;
+        cout << "Waktu        : " << transaksi->waktu << endl;
+        cout << "------------------------------------------\n";
+        cout << left << setw(5) << "No" 
+             << setw(20) << "Produk" 
+             << setw(10) << "Jumlah" 
+             << setw(15) << "Harga" 
+             << setw(15) << "Subtotal\n";
+        cout << "------------------------------------------\n";
+        
+        TransaksiDetail* detail = transaksi->detail;
+        int no = 1;
+        while (detail != NULL) {
+            cout << left << setw(5) << no++
+                 << setw(20) << detail->nama_produk
+                 << setw(10) << detail->jumlah
+                 << "Rp" << setw(13) << fixed << setprecision(2) << detail->harga
+                 << "Rp" << setw(13) << fixed << setprecision(2) << detail->subtotal << endl;
+            detail = detail->next;
+        }
+        
+        cout << "------------------------------------------\n";
+        cout << right << setw(50) << "Total: Rp" << fixed << setprecision(2) << transaksi->total << endl;
+        cout << "==========================================\n";
+        cout << "      Terima kasih atas pembelian Anda!\n";
+        cout << "==========================================\n\n";
+    }
+    
+    void laporanPenjualan() {
+        int pilihan;
+        cout << "\n=== LAPORAN PENJUALAN ===\n";
+        cout << "1. Laporan Harian\n";
+        cout << "2. Laporan Bulanan\n";
+        cout << "3. Semua Transaksi\n";
+        cout << "Pilihan: ";
+        cin >> pilihan;
+        clearInputBuffer();
+        
+        if (pilihan == 1) {
+            string tanggal;
+            cout << "Masukkan tanggal (dd-mm-yyyy): ";
+            getline(cin, tanggal);
+            
+            cout << "\n=== LAPORAN HARIAN " << tanggal << " ===\n";
+            tampilkanTransaksiByDate(tanggal, "harian");
+            
+        } else if (pilihan == 2) {
+            string bulan;
+            cout << "Masukkan bulan (mm-yyyy): ";
+            getline(cin, bulan);
+            
+            cout << "\n=== LAPORAN BULANAN " << bulan << " ===\n";
+            tampilkanTransaksiByDate(bulan, "bulanan");
+            
+        } else if (pilihan == 3) {
+            cout << "\n=== SEMUA TRANSAKSI ===\n";
+            tampilkanSemuaTransaksi();
+        } else {
+            cout << "Pilihan tidak valid!\n";
+        }
+    }
+    
+    void tampilkanTransaksiByDate(string date_filter, string jenis) {
+        if (head_transaksi == NULL) {
+            cout << "Tidak ada transaksi.\n";
+            return;
+        }
+        
+        cout << "========================================================================================\n";
+        cout << left << setw(12) << "ID Transaksi" 
+             << setw(12) << "Tanggal" 
+             << setw(10) << "Waktu" 
+             << setw(35) << "Detail Produk" 
+             << setw(15) << "Total\n";
+        cout << "========================================================================================\n";
+        
+        Transaksi* current = head_transaksi;
+        double total_harian = 0;
+        bool found = false;
+        
+        while (current != NULL) {
+            bool tampil = false;
+            
+            if (jenis == "harian" && current->tanggal == date_filter) {
+                tampil = true;
+            } else if (jenis == "bulanan") {
+                size_t dash_pos = current->tanggal.find('-');
+                if (dash_pos != string::npos) {
+                    string bulan_tahun = current->tanggal.substr(dash_pos + 1);
+                    if (bulan_tahun == date_filter) {
+                        tampil = true;
+                    }
+                }
+            } else if (jenis == "semua") {
+                tampil = true;
+            }
+            
+            if (tampil) {
+                found = true;
+                total_harian += current->total;
+                
+                string detail_str = "";
+                TransaksiDetail* detail = current->detail;
+                while (detail != NULL) {
+                    detail_str += detail->nama_produk + "(" + intToString(detail->jumlah) + ") ";
+                    detail = detail->next;
+                }
+                
+                cout << left << setw(12) << current->id_transaksi
+                     << setw(12) << current->tanggal
+                     << setw(10) << current->waktu
+                     << setw(35) << (detail_str.length() > 35 ? detail_str.substr(0, 32) + "..." : detail_str)
+                     << "Rp" << fixed << setprecision(2) << current->total << endl;
+            }
+            
+            current = current->next;
+        }
+        
+        if (!found) {
+            cout << "Tidak ada transaksi untuk periode tersebut.\n";
+        } else {
+            cout << "========================================================================================\n";
+            cout << "Total " << jenis << ": Rp" << fixed << setprecision(2) << total_harian << endl;
+        }
+    }
+    
+    void tampilkanSemuaTransaksi() {
+        tampilkanTransaksiByDate("", "semua");
+    }
+    
+    void buatDataDummy() {
+        Produk* current = head_produk;
+        while (current != NULL) {
+            Produk* temp = current;
+            current = current->next;
+            delete temp;
+        }
+        head_produk = tail_produk = NULL;
+        
+        string categories[] = {"makanan", "vitamin", "obat", "aksesoris", "mainan"};
+        string names[][5] = {
+            {"Royal Canin Kitten", "Whiskas Adult", "Pro Plan Salmon", "Friskies Ocean", "Pedigree Puppy"},
+            {"Vitamin A Kucing", "Vitamin B Anjing", "Calcium Plus", "Vitamin C Hewan", "Multivitamin"},
+            {"Obat Cacing", "Obat Kutu", "Antiseptik", "Salep Mata", "Obat Diare"},
+            {"Kandang Burung", "Tali Tuntun", "Keranjang Tidur", "Mangkuk Makan", "Kandang Kelinci"},
+            {"Bola Berdenting", "Tali Tarik", "Boneka Tikus", "Frisbee", "Tongkat Interaktif"}
+        };
+        
+        string descriptions[] = {
+            "Makanan premium untuk pertumbuhan optimal",
+            "Suplemen kesehatan untuk hewan peliharaan",
+            "Obat untuk menjaga kesehatan hewan",
+            "Aksesoris untuk kenyamanan hewan",
+            "Mainan untuk melatih dan menghibur hewan"
+        };
+        
+        double prices[] = {85000, 45000, 35000, 120000, 25000};
+        int stocks[] = {50, 30, 40, 20, 60};
+        
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                Produk* baru = new Produk;
+                baru->kategori = categories[i];
+                baru->id = generateId(categories[i]);
+                baru->nama = names[i][j];
+                baru->stok = stocks[i];
+                baru->harga = prices[i] + (j * 5000);
+                baru->deskripsi = descriptions[i];
+                baru->prev = NULL;
+                baru->next = NULL;
+                
+                if (head_produk == NULL) {
+                    head_produk = tail_produk = baru;
+                } else {
+                    tail_produk->next = baru;
+                    baru->prev = tail_produk;
+                    tail_produk = baru;
+                }
+            }
+        }
+        
+        cout << "Data dummy berhasil dibuat (25 produk)\n";
+    }
+    
+    void tampilkanMenu() {
+        cout << "\n=== SISTEM MANAJEMEN PET COMPANY ===\n";
+        cout << "1. Tambah Produk\n";
+        cout << "2. Tampilkan Semua Produk\n";
+        cout << "3. Edit Produk\n";
+        cout << "4. Hapus Produk\n";
+        cout << "5. Cari Produk (Nama/Kategori)\n";
+        cout << "6. Simulasi Pembelian\n";
+        cout << "7. Cetak Nota Pembelian\n";
+        cout << "8. Laporan Penjualan\n";
+        cout << "9. Buat Data Dummy (Testing)\n";
+        cout << "0. Keluar\n";
+        cout << "Pilihan: ";
+    }
+};
+
+int main() {
+    PetCompany petShop;
+    int pilihan;
+    
+    petShop.buatDataDummy();
+    
+    do {
+        petShop.tampilkanMenu();
+        cin >> pilihan;
+        
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        switch (pilihan) {
+            case 1:
+                petShop.tambahProduk();
+                break;
+            case 2:
+                petShop.tampilkanSemuaProduk();
+                break;
+            case 3:
+                petShop.editProduk();
+                break;
+            case 4:
+                petShop.hapusProduk();
+                break;
+            case 5:
+                petShop.cariProduk();
+                break;
+            case 6:
+                petShop.simulasiPembelian();
+                break;
+            case 7: {
+                int id;
+                cout << "Masukkan ID Transaksi: ";
+                cin >> id;
+                petShop.cetakNota(id);
+                break;
+            }
+            case 8:
+                petShop.laporanPenjualan();
+                break;
+            case 9:
+                petShop.buatDataDummy();
+                break;
+            case 0:
+                cout << "\nTerima kasih telah menggunakan sistem Pet Company!\n";
+                break;
+            default:
+                cout << "Pilihan tidak valid!\n";
+        }
+        
+        if (pilihan != 0) {
+            cout << "\nTekan Enter untuk melanjutkan...";
+            cin.get();
+        }
+        
+    } while (pilihan != 0);
+    
+    return 0;
+}
+
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+// Enum untuk status pesanan
+enum StatusPesanan {
+    DIPROSES,
+    DIKIRIM,
+    DITERIMA
+};
+
+// Enum untuk metode pengiriman
+enum MetodePengiriman {
+    ANTAR,
+    AMBIL_DI_TOKO
+};
+
+// Struct untuk data pesanan
+struct Pesanan {
+    int id;
+    string namaPelanggan;
+    string namaProduk;
+    MetodePengiriman metode;
+    StatusPesanan status;
+    int estimasiWaktu; // dalam menit
+    Pesanan* next;
+    Pesanan* prev;
+};
+
+// Class untuk mengelola doubly linked list pesanan
+class ManajemenPesanan {
+private:
+    Pesanan* head;
+    Pesanan* tail;
+    int idCounter;
+    
+    // Fungsi untuk mengonversi enum ke string
+    string statusToString(StatusPesanan status) {
+        switch(status) {
+            case DIPROSES: return "Diproses";
+            case DIKIRIM: return "Dikirim";
+            case DITERIMA: return "Diterima";
+            default: return "Tidak Diketahui";
+        }
+    }
+    
+    string metodeToString(MetodePengiriman metode) {
+        switch(metode) {
+            case ANTAR: return "Antar";
+            case AMBIL_DI_TOKO: return "Ambil di Toko";
+            default: return "Tidak Diketahui";
+        }
+    }
+    
+    // Generate estimasi waktu otomatis berdasarkan metode
+    int generateEstimasiWaktu(MetodePengiriman metode) {
+        // Gunakan waktu saat ini sebagai seed untuk random
+        if (metode == ANTAR) {
+            // Estimasi antar: 30-120 menit
+            return 30 + (rand() % 91);
+        } else {
+            // Ambil di toko: 0 menit
+            return 0;
+        }
+    }
+
+public:
+    // Constructor
+    ManajemenPesanan() {
+        head = NULL;
+        tail = NULL;
+        idCounter = 1000;
+        srand(time(0));
+    }
+    
+    // Destructor
+    ~ManajemenPesanan() {
+        Pesanan* current = head;
+        while (current != NULL) {
+            Pesanan* next = current->next;
+            delete current;
+            current = next;
+        }
+    }
+    
+    // Fungsi untuk membuat pesanan baru
+    void buatPesanan() {
+        Pesanan* pesananBaru = new Pesanan();
+        pesananBaru->id = idCounter++;
+        
+        cout << "\n=== BUAT PESANAN BARU ===\n";
+        cin.ignore();
+        cout << "Nama Pelanggan: ";
+        getline(cin, pesananBaru->namaPelanggan);
+        
+        cout << "Nama Produk: ";
+        getline(cin, pesananBaru->namaProduk);
+        
+        int pilihan;
+        cout << "\nPilih Metode Pengiriman:\n";
+        cout << "1. Antar ke Rumah\n";
+        cout << "2. Ambil di Toko\n";
+        cout << "Pilihan (1-2): ";
+        cin >> pilihan;
+        
+        if (pilihan == 1) {
+            pesananBaru->metode = ANTAR;
+        } else {
+            pesananBaru->metode = AMBIL_DI_TOKO;
+        }
+        
+        pesananBaru->status = DIPROSES;
+        pesananBaru->estimasiWaktu = generateEstimasiWaktu(pesananBaru->metode);
+        
+        // Inisialisasi pointer
+        pesananBaru->next = NULL;
+        pesananBaru->prev = NULL;
+        
+        // Tambahkan ke linked list
+        if (head == NULL) {
+            // List kosong
+            head = pesananBaru;
+            tail = pesananBaru;
+        } else {
+            // Tambah di akhir
+            tail->next = pesananBaru;
+            pesananBaru->prev = tail;
+            tail = pesananBaru;
+        }
+        
+        cout << "\nPesanan berhasil dibuat!\n";
+        cout << "ID Pesanan: " << pesananBaru->id << endl;
+        cout << "Estimasi Waktu: " << pesananBaru->estimasiWaktu << " menit\n";
+    }
+    
+    // Fungsi untuk menampilkan semua pesanan
+    void tampilkanSemuaPesanan() {
+        if (head == NULL) {
+            cout << "\nBelum ada pesanan.\n";
+            return;
+        }
+        
+        cout << "\n=== DAFTAR SEMUA PESANAN ===\n";
+        Pesanan* current = head;
+        while (current != NULL) {
+            cout << "\nID: " << current->id << endl;
+            cout << "Pelanggan: " << current->namaPelanggan << endl;
+            cout << "Produk: " << current->namaProduk << endl;
+            cout << "Metode: " << metodeToString(current->metode) << endl;
+            cout << "Status: " << statusToString(current->status) << endl;
+            cout << "Estimasi: " << current->estimasiWaktu << " menit\n";
+            cout << "---------------------------\n";
+            current = current->next;
+        }
+    }
+    
+    // Fungsi untuk mencari pesanan berdasarkan ID
+    Pesanan* cariPesanan(int id) {
+        Pesanan* current = head;
+        while (current != NULL) {
+            if (current->id == id) {
+                return current;
+            }
+            current = current->next;
+        }
+        return NULL;
+    }
+    
+    // Fungsi untuk mengupdate status pesanan
+    void updateStatusPesanan() {
+        if (head == NULL) {
+            cout << "\nBelum ada pesanan.\n";
+            return;
+        }
+        
+        int id;
+        cout << "\nMasukkan ID Pesanan yang akan diupdate: ";
+        cin >> id;
+        
+        Pesanan* pesanan = cariPesanan(id);
+        if (pesanan == NULL) {
+            cout << "Pesanan dengan ID " << id << " tidak ditemukan.\n";
+            return;
+        }
+        
+        cout << "\nStatus saat ini: " << statusToString(pesanan->status) << endl;
+        cout << "\nPilih status baru:\n";
+        cout << "1. Diproses\n";
+        cout << "2. Dikirim\n";
+        cout << "3. Diterima\n";
+        cout << "Pilihan (1-3): ";
+        
+        int pilihan;
+        cin >> pilihan;
+        
+        switch(pilihan) {
+            case 1:
+                pesanan->status = DIPROSES;
+                break;
+            case 2:
+                pesanan->status = DIKIRIM;
+                break;
+            case 3:
+                pesanan->status = DITERIMA;
+                break;
+            default:
+                cout << "Pilihan tidak valid.\n";
+                return;
+        }
+        
+        cout << "Status berhasil diupdate!\n";
+    }
+    
+    // Fungsi untuk menghapus pesanan
+    void hapusPesanan() {
+        if (head == NULL) {
+            cout << "\nBelum ada pesanan.\n";
+            return;
+        }
+        
+        int id;
+        cout << "\nMasukkan ID Pesanan yang akan dihapus: ";
+        cin >> id;
+        
+        Pesanan* pesanan = cariPesanan(id);
+        if (pesanan == NULL) {
+            cout << "Pesanan dengan ID " << id << " tidak ditemukan.\n";
+            return;
+        }
+        
+        // Hapus dari linked list
+        if (pesanan == head && pesanan == tail) {
+            // Hanya satu elemen
+            head = NULL;
+            tail = NULL;
+        } else if (pesanan == head) {
+            // Hapus dari awal
+            head = pesanan->next;
+            head->prev = NULL;
+        } else if (pesanan == tail) {
+            // Hapus dari akhir
+            tail = pesanan->prev;
+            tail->next = NULL;
+        } else {
+            // Hapus dari tengah
+            pesanan->prev->next = pesanan->next;
+            pesanan->next->prev = pesanan->prev;
+        }
+        
+        delete pesanan;
+        cout << "Pesanan berhasil dihapus!\n";
+    }
+    
+    // Fungsi untuk menampilkan pesanan berdasarkan status
+    void tampilkanPesananByStatus() {
+        if (head == NULL) {
+            cout << "\nBelum ada pesanan.\n";
+            return;
+        }
+        
+        cout << "\nPilih status yang ingin ditampilkan:\n";
+        cout << "1. Diproses\n";
+        cout << "2. Dikirim\n";
+        cout << "3. Diterima\n";
+        cout << "Pilihan (1-3): ";
+        
+        int pilihan;
+        cin >> pilihan;
+        
+        StatusPesanan statusPilihan;
+        switch(pilihan) {
+            case 1:
+                statusPilihan = DIPROSES;
+                break;
+            case 2:
+                statusPilihan = DIKIRIM;
+                break;
+            case 3:
+                statusPilihan = DITERIMA;
+                break;
+            default:
+                cout << "Pilihan tidak valid.\n";
+                return;
+        }
+        
+        cout << "\n=== PESANAN DENGAN STATUS " << statusToString(statusPilihan) << " ===\n";
+        Pesanan* current = head;
+        bool ditemukan = false;
+        
+        while (current != NULL) {
+            if (current->status == statusPilihan) {
+                ditemukan = true;
+                cout << "\nID: " << current->id << endl;
+                cout << "Pelanggan: " << current->namaPelanggan << endl;
+                cout << "Produk: " << current->namaProduk << endl;
+                cout << "Metode: " << metodeToString(current->metode) << endl;
+                cout << "Estimasi: " << current->estimasiWaktu << " menit\n";
+                cout << "---------------------------\n";
+            }
+            current = current->next;
+        }
+        
+        if (!ditemukan) {
+            cout << "Tidak ada pesanan dengan status tersebut.\n";
+        }
+    }
+    
+    // Fungsi untuk menampilkan menu
+    void tampilkanMenu() {
+        cout << "\n=== SISTEM PENGANTARAN & PEMESANAN ONLINE ===\n";
+        cout << "1. Buat Pesanan Baru\n";
+        cout << "2. Tampilkan Semua Pesanan\n";
+        cout << "3. Update Status Pesanan\n";
+        cout << "4. Hapus Pesanan\n";
+        cout << "5. Tampilkan Pesanan Berdasarkan Status\n";
+        cout << "6. Keluar\n";
+        cout << "Pilihan (1-6): ";
+    }
+};
+
+// Fungsi utama
+int main() {
+    ManajemenPesanan sistem;
+    int pilihan;
+    
+    do {
+        sistem.tampilkanMenu();
+        cin >> pilihan;
+        
+        switch(pilihan) {
+            case 1:
+                sistem.buatPesanan();
+                break;
+            case 2:
+                sistem.tampilkanSemuaPesanan();
+                break;
+            case 3:
+                sistem.updateStatusPesanan();
+                break;
+            case 4:
+                sistem.hapusPesanan();
+                break;
+            case 5:
+                sistem.tampilkanPesananByStatus();
+                break;
+            case 6:
+                cout << "\nTerima kasih telah menggunakan sistem kami!\n";
+                break;
+            default:
+                cout << "\nPilihan tidak valid. Silakan coba lagi.\n";
+        }
+    } while (pilihan != 6);
+    
+    return 0;
+}
