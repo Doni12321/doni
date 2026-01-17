@@ -1,0 +1,26 @@
+package klinikhewan;
+
+public class MainKlinik {
+    public static void main(String[] args) {
+        Klinik klinik = new Klinik("Klinik Hewan Sehat");
+
+        Dokter d1 = new Dokter("D001", "Dr. Budi", "Hewan Kecil");
+        klinik.tambahDokter(d1);
+
+        Pemilik p1 = new Pemilik("P001", "Andi");
+        Hewan kucing1 = new Kucing("H001", "Mimi", 3, "Persia");
+        Hewan anjing1 = new Anjing("H002", "Doggo", 2, true);
+        p1.tambahHewan(kucing1);
+        p1.tambahHewan(anjing1);
+        klinik.tambahPemilik(p1);
+
+        RekamMedis rm1 = new RekamMedis("RM001", kucing1, d1);
+        Obat o1 = new Obat("O001", "Antibiotik", "2x sehari", 50000);
+        rm1.tambahObat(o1);
+        klinik.tambahRekamMedis(rm1);
+
+        klinik.tampilkanData();
+        p1.lihatHewan();
+        rm1.lihatDetail();
+    }
+}
