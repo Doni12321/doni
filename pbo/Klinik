@@ -1,0 +1,33 @@
+package klinikhewan;
+
+import java.util.ArrayList;
+
+public class Klinik {
+    private String namaKlinik;
+    private ArrayList<Dokter> listDokter = new ArrayList<>();
+    private ArrayList<Pemilik> listPemilik = new ArrayList<>();
+    private ArrayList<RekamMedis> listRekam = new ArrayList<>();
+
+    public Klinik(String nama) {
+        this.namaKlinik = nama;
+    }
+
+    public void tambahDokter(Dokter d) {
+        listDokter.add(d);
+    }
+
+    public void tambahPemilik(Pemilik p) {
+        listPemilik.add(p);
+    }
+
+    public void tambahRekamMedis(RekamMedis r) {
+        listRekam.add(r);
+    }
+
+    public void tampilkanData() {
+        System.out.println("🏥 Klinik: " + namaKlinik);
+        System.out.println("Jumlah Dokter: " + listDokter.size());
+        System.out.println("Jumlah Pemilik: " + listPemilik.size());
+        System.out.println("Jumlah Rekam Medis: " + listRekam.size());
+    }
+}
