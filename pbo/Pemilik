@@ -1,0 +1,30 @@
+package klinikhewan;
+
+import java.util.ArrayList;
+
+public class Pemilik {
+    private String idPemilik;
+    private String nama;
+    private ArrayList<Hewan> daftarHewan = new ArrayList<>();
+
+    public Pemilik(String id, String nama) {
+        this.idPemilik = id;
+        this.nama = nama;
+    }
+
+    public void tambahHewan(Hewan h) {
+        daftarHewan.add(h);
+    }
+
+    public void lihatHewan() {
+        System.out.println("🐾 Hewan milik " + nama + ":");
+        for (Hewan h : daftarHewan) {
+            h.tampilkanInfo();
+            System.out.println("---------------------");
+        }
+    }
+
+    public String getNama() {
+        return nama;
+    }
+}

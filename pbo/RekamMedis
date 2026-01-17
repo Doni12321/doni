@@ -1,0 +1,31 @@
+package klinikhewan;
+
+import java.util.ArrayList;
+
+public class RekamMedis {
+    private String idRekam;
+    private Hewan hewan;
+    private Dokter dokter;
+    private ArrayList<Obat> daftarObat = new ArrayList<>();
+
+    public RekamMedis(String id, Hewan h, Dokter d) {
+        this.idRekam = id;
+        this.hewan = h;
+        this.dokter = d;
+    }
+
+    public void tambahObat(Obat o) {
+        daftarObat.add(o);
+    }
+
+    public void lihatDetail() {
+        System.out.println("🧾 Rekam Medis ID: " + idRekam);
+        System.out.println("Dokter: " + dokter.getNama());
+        hewan.tampilkanInfo();
+        System.out.println("Obat yang diberikan:");
+        for (Obat o : daftarObat) {
+            o.tampilkanInfo();
+        }
+        System.out.println("---------------------");
+    }
+}

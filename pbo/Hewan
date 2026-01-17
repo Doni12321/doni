@@ -1,0 +1,59 @@
+package klinikhewan;
+
+public class Hewan {
+    protected String idHewan;
+    protected String nama;
+    protected String jenis;
+    protected int umur;
+    protected String statusKesehatan;
+
+    public Hewan(String idHewan, String nama, String jenis, int umur) {
+        this.idHewan = idHewan;
+        this.nama = nama;
+        this.jenis = jenis;
+        this.umur = umur;
+        this.statusKesehatan = "Sehat";
+    }
+
+    public void updateStatus(String status) {
+        this.statusKesehatan = status;
+    }
+
+    public void tampilkanInfo() {
+        System.out.println("Hewan: " + nama + " (" + jenis + ")");
+        System.out.println("Umur: " + umur + " tahun");
+        System.out.println("Status: " + statusKesehatan);
+    }
+}
+
+class Kucing extends Hewan {
+    private String ras;
+
+    public Kucing(String id, String nama, int umur, String ras) {
+        super(id, nama, "Kucing", umur);
+        this.ras = ras;
+    }
+
+    @Override
+    public void tampilkanInfo() {
+        System.out.println("🐱 Info Kucing:");
+        super.tampilkanInfo();
+        System.out.println("Ras: " + ras);
+    }
+}
+
+class Anjing extends Hewan {
+    private boolean terlatih;
+
+    public Anjing(String id, String nama, int umur, boolean terlatih) {
+        super(id, nama, "Anjing", umur);
+        this.terlatih = terlatih;
+    }
+
+    @Override
+    public void tampilkanInfo() {
+        System.out.println("🐶 Info Anjing:");
+        super.tampilkanInfo();
+        System.out.println("Status Pelatihan: " + (terlatih ? "Terlatih" : "Belum Terlatih"));
+    }
+}
