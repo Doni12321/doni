@@ -1,0 +1,27 @@
+package klinikhewan;
+
+public class Obat {
+    private String idObat;
+    private String nama;
+    private String dosis;
+    private double harga;
+
+    public Obat(String id, String nama, String dosis, double harga) {
+        this.idObat = id;
+        this.nama = nama;
+        this.dosis = dosis;
+        this.harga = harga;
+    }
+
+    public void tampilkanInfo() {
+        System.out.println("💊 Obat: " + nama + " (" + dosis + "), Harga: Rp" + harga);
+    }
+
+    public String getNama() {
+        return nama;
+    }
+
+    public double getHarga() {
+        return harga;
+    }
+}
