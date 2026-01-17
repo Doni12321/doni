@@ -1,0 +1,25 @@
+package klinikhewan;
+
+public class Dokter {
+    private String idDokter;
+    private String nama;
+    private String spesialisasi;
+
+    public Dokter(String id, String nama, String spesialisasi) {
+        this.idDokter = id;
+        this.nama = nama;
+        this.spesialisasi = spesialisasi;
+    }
+
+    public void periksaHewan(Hewan h) {
+        System.out.println("👨‍⚕️ Dokter " + nama + " memeriksa hewan: " + h.nama);
+    }
+
+    public void beriResep(Obat o) {
+        System.out.println("Resep diberikan: " + o.getNama());
+    }
+
+    public String getNama() {
+        return nama;
+    }
+}
